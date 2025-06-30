@@ -22,8 +22,8 @@ RUN npm install
 
 COPY . .
 
-# Build the TypeScript code and verify the output
-RUN npm run build && \
+RUN rm -f *.tsbuildinfo && \
+    npm run build && \
     ls -la dist/ && \
     test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
 

@@ -29,7 +29,7 @@ COPY backend/tsconfig.json ./
 RUN npm run build && \
     echo "Build completed, checking output..." && \
     ls -la dist/ && \
-    test -f dist/index.js || (echo "Backend build failed: dist/index.js not found" && exit 1)
+    test -f dist/index.js
 
 # Copy and build frontend
 WORKDIR /app
