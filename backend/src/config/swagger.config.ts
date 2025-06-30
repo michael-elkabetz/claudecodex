@@ -89,7 +89,7 @@ const options: swaggerJsdoc.Options = {
         },
         ProcessRequest: {
           type: 'object',
-          required: ['prompt', 'apiKey', 'githubUrl', 'githubToken'],
+          required: ['prompt', 'apiKey', 'githubUrl'],
           properties: {
             prompt: {
               type: 'string',
@@ -108,7 +108,7 @@ const options: swaggerJsdoc.Options = {
             },
             githubToken: {
               type: 'string',
-              description: 'GitHub access token',
+              description: 'GitHub access token (optional - can be provided via GITHUB_TOKEN environment variable)',
               example: 'ghp_xxxxxxxxxxxxxxxxxxxx'
             }
           }
