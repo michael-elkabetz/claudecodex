@@ -22,18 +22,26 @@ WORKDIR /app
 # Copy and build backend
 COPY backend/package*.json ./backend/
 WORKDIR /app/backend
-RUN rm -f package-lock.json && npm install
+RUN rm -f package-lock.json && npm install --verbose
 COPY backend/src ./src
 COPY backend/tsconfig.json ./
-RUN npm run build
+# Build with verbose output and verification
+RUN npm run build && \
+    echo "Build completed, checking output..." && \
+    ls -la dist/ && \
+    test -f dist/index.js || (echo "Backend build failed: dist/index.js not found" && exit 1)
 
 # Copy and build frontend
 WORKDIR /app
 COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
-RUN rm -f package-lock.json && npm install
+RUN rm -f package-lock.json && npm install --verbose
 COPY frontend/ ./
-RUN npm run build
+# Build with verification
+RUN npm run build && \
+    echo "Frontend build completed, checking output..." && \
+    ls -la dist/ && \
+    test -f dist/index.html || (echo "Frontend build failed: dist/index.html not found" && exit 1)
 
 WORKDIR /app/backend
 RUN mkdir -p public

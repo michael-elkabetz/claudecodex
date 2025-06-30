@@ -22,7 +22,10 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+# Build the TypeScript code and verify the output
+RUN npm run build && \
+    ls -la dist/ && \
+    test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
 
 RUN chown -R appuser:appgroup /usr/src/app
 USER appuser
