@@ -10,6 +10,36 @@ ClaudeCodex is the first open-source project that turns the most powerful code a
 
 ## Getting Started
 
+### Quick Start (Recommended)
+
+![Docker](https://img.shields.io/badge/🚀_Quick-Start-FF6B6B?style=flat&logo=docker&logoColor=white)
+
+The fastest way to get ClaudeCodex running is with our pre-built Docker image:
+
+
+**GitHub Authentication (Choose one method):**
+
+**Option 1: Direct Token**
+```bash
+docker run -e GITHUB_TOKEN=[github_token] \
+           claudecodx/claudecodx:v1.0.0-alpha
+```
+
+
+
+**Option 2: OAuth Flow**
+
+```bash
+
+docker run -e GITHUB_CLIENT_ID=[your_client_id] \
+           -e GITHUB_CLIENT_SECRET=[your_client_secret] \
+           -e GITHUB_REDIRECT_URI=http://localhost:3000 \
+           claudecodex/claudecodx:v1.0.0-alpha
+```
+
+**Optional Environment Variables:**
+- `API_KEY`: Your Anthropic Claude or OpenAI API key
+
 ### Production
 
 #### Prerequisites
