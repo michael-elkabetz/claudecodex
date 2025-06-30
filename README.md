@@ -98,7 +98,7 @@ npm run dev:mcp        # MCP server only
 ```
 
 #### Development URLs
-- **Frontend**: http://localhost:3001
+- **Frontend**: http://localhost
 - **Backend**: http://localhost:3000
 - **MCP Server**: http://localhost:12500
 
