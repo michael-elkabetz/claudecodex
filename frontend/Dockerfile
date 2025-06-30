@@ -11,7 +11,7 @@ ENV VITE_GITHUB_CLIENT_ID=$VITE_GITHUB_CLIENT_ID
 ENV VITE_GITHUB_REDIRECT_URI=$VITE_GITHUB_REDIRECT_URI
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build
