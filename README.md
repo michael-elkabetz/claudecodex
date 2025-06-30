@@ -49,7 +49,7 @@ ClaudeCodex is the first open-source project that turns the most powerful code a
 4.  **Access the services:**
     - **Frontend**: http://localhost (port 80)
     - **Backend API**: http://localhost:3000
-    - **MCP Server**: http://localhost:12500
+    - **MCP Server**: http://localhost:6213
 
 #### With Docker (Frontend + Backend)
 
@@ -100,7 +100,7 @@ npm run dev:mcp        # MCP server only
 #### Development URLs
 - **Frontend**: http://localhost
 - **Backend**: http://localhost:3000
-- **MCP Server**: http://localhost:12500
+- **MCP Server**: http://localhost:6213
 
 ## 🚀 Docker Deployment
 
@@ -127,7 +127,7 @@ docker run -d -p 3000:3000 claudecodex-backend
 
 # MCP Server
 docker build -f mcp/Dockerfile -t claudecodex-mcp ./mcp
-docker run -d -p 12500:12500 claudecodex-mcp
+docker run -d -p 6213:6213 claudecodex-mcp
 ```
 
 ### Docker Compose Services
@@ -136,15 +136,15 @@ docker run -d -p 12500:12500 claudecodex-mcp
 |---------|------|-------------|
 | **frontend** | 80 | React TypeScript UI |
 | **backend** | 3000 | Express.js REST API |
-| **mcp** | 12500 | Model Context Protocol Server |
+| **mcp** | 6213 | Model Context Protocol Server |
 
 ## 🔌 MCP Integration
 
 ### Connecting to MCP Server
 
-The MCP server runs on port `12500` and provides AI-powered code generation capabilities.
+The MCP server runs on port `6213` and provides AI-powered code generation capabilities.
 
-**Connection URL**: `http://localhost:12500`
+**Connection URL**: `http://localhost:6213`
 
 #### MCP Inspector Setup
 
@@ -160,7 +160,7 @@ The MCP server runs on port `12500` and provides AI-powered code generation capa
 
 3. **Configure Connection:**
    - **Transport Type**: `Streamable HTTP`
-   - **MCP Server URL**: `http://localhost:12500`
+   - **MCP Server URL**: `http://localhost:6213`
 
 4. **Authentication:**
    - Copy the `MCP_PROXY_AUTH_TOKEN` from the inspector logs

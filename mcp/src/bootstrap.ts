@@ -4,7 +4,7 @@ import { logger } from "./logger.js";
 import { healthController } from "./http/health-controller.js";
 import { routes } from "./http/mcp-controller.js";
 
-const PORT = process.env.PORT || 12500;
+const PORT = process.env.PORT || 6213;
 
 export function bootstrap(): { app: Application } {
   const mcpServerFactory = new Factory();

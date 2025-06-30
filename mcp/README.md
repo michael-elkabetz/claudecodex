@@ -6,7 +6,7 @@
 
 Model Context Protocol (MCP) server for ClaudeCodex, providing AI-powered code generation capabilities through a standardized protocol interface.
 
-![Port](https://img.shields.io/badge/🌐_Port-12500-E74C3C?style=flat&logoColor=white) ![Protocol](https://img.shields.io/badge/📡_HTTP-Streamable-4ECDC4?style=flat&logoColor=white)
+![Port](https://img.shields.io/badge/🌐_Port-6213-E74C3C?style=flat&logoColor=white) ![Protocol](https://img.shields.io/badge/📡_HTTP-Streamable-4ECDC4?style=flat&logoColor=white)
 
 ## ✨ Features
 
@@ -33,10 +33,10 @@ npm install
 npm run dev
 
 # Check server status
-curl http://localhost:12500/health
+curl http://localhost:6213/health
 ```
 
-The MCP server will be available at `http://localhost:12500`.
+The MCP server will be available at `http://localhost:6213`.
 
 ### 🐳 Docker Deployment
 
@@ -57,7 +57,7 @@ docker-compose up mcp
 docker-compose up --build -d
 ```
 
-The MCP service will be available at `http://localhost:12500`.
+The MCP service will be available at `http://localhost:6213`.
 
 #### Individual Docker Container
 
@@ -68,7 +68,7 @@ The MCP service will be available at `http://localhost:12500`.
 docker build -t claudecodex-mcp .
 
 # Run the container
-docker run -d -p 12500:12500 \
+docker run -d -p 6213:6213 \
   -e OPENAI_API_KEY=your_openai_api_key \
   -e ANTHROPIC_API_KEY=your_anthropic_api_key \
   claudecodex-mcp
@@ -87,7 +87,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # Server Configuration
 NODE_ENV=development
-MCP_PORT=12500
+MCP_PORT=6213
 
 # GitHub Integration
 GITHUB_TOKEN=your_github_token_here
@@ -106,7 +106,7 @@ MCP_API_KEY=your_mcp_api_key_here
 
 ![Server URL](https://img.shields.io/badge/🌐_Server-URL-3498DB?style=flat&logoColor=white)
 
-**Connection URL**: `http://localhost:12500`
+**Connection URL**: `http://localhost:6213`
 
 ### 🔍 MCP Inspector Setup
 
@@ -136,7 +136,7 @@ npx @modelcontextprotocol/inspector
 ![Connection Setup](https://img.shields.io/badge/⚙️_Connection-Setup-27AE60?style=flat&logoColor=white)
 
 1. **Transport Type**: Select `Streamable HTTP`
-2. **Server URL**: Enter `http://localhost:12500`
+2. **Server URL**: Enter `http://localhost:6213`
 
 #### 4. Authentication
 
@@ -167,7 +167,7 @@ For programmatic access:
 // Example MCP client connection
 const mcpClient = new MCPClient({
   transport: 'http',
-  url: 'http://localhost:12500',
+  url: 'http://localhost:6213',
   headers: {
     'Authorization': `Bearer ${process.env.MCP_API_KEY}`
   }

@@ -28,7 +28,7 @@ services:
     build: ./mcp
     container_name: claudecodex_mcp
     ports:
-      - "12500:12500"
+      - "6213:6213"
     environment:
       - API_URL=http://backend:3000/api/core
     networks:
