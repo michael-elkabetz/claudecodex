@@ -21,7 +21,8 @@ The fastest way to get ClaudeCodex running is with our pre-built Docker image:
 
 **Option 1: Direct Token**
 ```bash
-docker run -e GITHUB_TOKEN=[github_token] \
+docker run -e GITHUB_TOKEN=ghp_xxx \
+           -e API_KEY=[sk-...-xxx] \ # Optional
            claudecodx/claudecodx:v1.0.0-alpha
 ```
 
@@ -34,6 +35,7 @@ docker run -e GITHUB_TOKEN=[github_token] \
 docker run -e GITHUB_CLIENT_ID=[your_client_id] \
            -e GITHUB_CLIENT_SECRET=[your_client_secret] \
            -e GITHUB_REDIRECT_URI=http://localhost:3000 \
+           -e API_KEY=[sk-...-xxx] \ # Optional 
            claudecodex/claudecodx:v1.0.0-alpha
 ```
 
@@ -57,13 +59,14 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 
 2.  **Set up environment variables:**
 
-    ```bash
-    # Update docker-compose.yml with following github environment variables for github authorization
+    Update `docker-compose.yml` with the following environment variables:
 
+    ```bash
     VITE_GITHUB_CLIENT_ID=[VITE_GITHUB_CLIENT_ID]
     VITE_GITHUB_REDIRECT_URI=[VITE_GITHUB_REDIRECT_URI]
     GITHUB_CLIENT_SECRET=[GITHUB_CLIENT_SECRET]
-    GITHUB_TOKEN=[GITHUB_TOKEN]  # Optional: Set this to use a default GitHub token instead of OAuth
+    GITHUB_TOKEN=ghp_xxx
+    API_KEY=[your_anthropic_or_openai_api_key]  # Optional
     ```
 
 3.  **Deploy with Docker Compose:**
@@ -92,39 +95,35 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 
 2.  **Set up environment variables:**
 
-    ```bash
-    # Update main Dockerfile with following github environment variables for github authorization
+    Update the main `Dockerfile` with the following environment variables:
 
+    ```bash
     VITE_GITHUB_CLIENT_ID=[VITE_GITHUB_CLIENT_ID]
     VITE_GITHUB_REDIRECT_URI=[VITE_GITHUB_REDIRECT_URI]
     GITHUB_CLIENT_SECRET=[GITHUB_CLIENT_SECRET]
-    GITHUB_TOKEN=[GITHUB_TOKEN]  # Optional: Set this to use a default GitHub token instead of OAuth
+    GITHUB_TOKEN=ghp_xxx
+    API_KEY=[your_anthropic_or_openai_api_key]  # Optional
     ```
 
-3.  **Deploy with Docker Compose:**
+3.  **Build and deploy:**
 
     ```bash
-    # Build Docker image
-    docker build -t claudecodex-backend .
-    
-    #Run Docker image
-    docker run -d -p 80:80 claudecodex 
+    docker build -t claudecodx-backend .
+    docker run -d -p 80:80 claudecodx-backend
+    ```
 
 ### Development
 
 #### Quick Setup
 
 ```bash
-# Install dependencies for all services
 npm install
-
-# Start all services in development mode
 npm run dev
 
-# Or start individual services
-npm run dev:frontend    # Frontend only
-npm run dev:backend     # Backend only
-npm run dev:mcp        # MCP server only
+# Individual services
+npm run dev:frontend
+npm run dev:backend
+npm run dev:mcp
 ```
 
 #### Development URLs
@@ -242,14 +241,12 @@ claudecodex/
 ### Available Scripts
 
 ```bash
-# Root level commands
 npm run dev           # Start all services
 npm run build         # Build all services
 npm run test          # Run all tests
 npm run lint          # Lint all projects
 npm run clean         # Clean build artifacts
 
-# Service-specific commands
 npm run dev:frontend  # Frontend development
 npm run dev:backend   # Backend development
 npm run dev:mcp       # MCP server development
