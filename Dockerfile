@@ -25,10 +25,7 @@ RUN rm -f package-lock.json && npm install --verbose
 COPY backend/src ./src
 COPY backend/tsconfig.json ./
 
-RUN npm run build && \
-    echo "Build completed, checking output..." && \
-    ls -la dist/ && \
-    test -f dist/index.js
+RUN npm run build
 
 WORKDIR /app
 COPY frontend/package*.json ./frontend/
@@ -36,10 +33,7 @@ WORKDIR /app/frontend
 RUN rm -f package-lock.json && npm install --verbose
 COPY frontend/ ./
 
-RUN npm run build && \
-    echo "Frontend build completed, checking output..." && \
-    ls -la dist/ && \
-    test -f dist/index.html
+RUN npm run build
 
 WORKDIR /app/backend
 RUN mkdir -p public

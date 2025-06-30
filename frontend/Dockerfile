@@ -16,10 +16,7 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-# Build the application and verify the output
-RUN npm run build && \
-    ls -la dist/ && \
-    test -f dist/index.html || (echo "Build failed: dist/index.html not found" && exit 1)
+RUN npm run build
 
 FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html

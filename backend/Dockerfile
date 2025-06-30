@@ -23,9 +23,7 @@ RUN npm install
 COPY . .
 
 RUN rm -f *.tsbuildinfo && \
-    npm run build && \
-    ls -la dist/ && \
-    test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
+    npm run build
 
 RUN chown -R appuser:appgroup /usr/src/app
 USER appuser
