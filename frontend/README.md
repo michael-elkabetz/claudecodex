@@ -64,31 +64,39 @@ The frontend service will be available at `http://localhost` (port 80).
 ![Docker Build](https://img.shields.io/badge/🔨_Docker-Build-2496ED?style=flat&logo=docker&logoColor=white)
 
 ```bash
-# Build the Docker image
-docker build -t claudecodex-frontend .
+# Build the Docker image with environment variables
+docker build -t claudecodex-frontend \
+  --build-arg VITE_API_URL=http://localhost:3000/api \
+  --build-arg VITE_GITHUB_CLIENT_ID=your_github_client_id \
+  --build-arg VITE_GITHUB_REDIRECT_URI=http://localhost/auth/callback \
+  .
 
 # Run the container
-docker run -d -p 80:80 \
-  -e VITE_API_URL=http://localhost:3000 \
-  -e VITE_GITHUB_CLIENT_ID=your_github_client_id \
-  -e VITE_GITHUB_REDIRECT_URI=http://localhost:3001
-  claudecodex-frontend
+docker run -d -p 80:80 claudecodex-frontend
 ```
 
 ### 🔧 Environment Variables
 
 ![Environment](https://img.shields.io/badge/⚙️_Environment-Config-E67E22?style=flat&logoColor=white)
 
-Create a `.env` file in the frontend directory:
+For local development, create a `.env` file in the frontend directory:
 
 ```env
 # API Configuration
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api
 
 # GitHub OAuth
 VITE_GITHUB_CLIENT_ID=your_github_oauth_app_client_id
-VITE_GITHUB_REDIRECT_URI=http://localhost:3001
+VITE_GITHUB_REDIRECT_URI=http://localhost/auth/callback
 ```
+
+**For deployment on render.com:**
+Set these as environment variables in your Render service settings:
+- `VITE_API_URL` - Your backend API URL
+- `VITE_GITHUB_CLIENT_ID` - GitHub OAuth application client ID
+- `VITE_GITHUB_REDIRECT_URI` - GitHub OAuth redirect URI
+
+Note: These variables are embedded during build time, not runtime.
 
 ## 🏗️ Architecture
 
