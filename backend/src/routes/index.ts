@@ -3,7 +3,6 @@ import coreRoutes from './core.routes';
 
 const router = Router();
 
-// Mount routes
 router.use('/core', coreRoutes);
 
 /**

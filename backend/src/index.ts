@@ -13,15 +13,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(helmet({
-  contentSecurityPolicy: false, // Allow Swagger UI to work
+  contentSecurityPolicy: false,
 }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files serving
 app.use('/static', express.static(path.join(__dirname, '../public')));
 app.use('/assets', express.static(path.join(__dirname, '../../frontend/dist/assets')));
 app.use('/favicon.ico', express.static(path.join(__dirname, '../public/favicon.ico')));
@@ -36,7 +34,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   customCss: `
     .swagger-ui .topbar { display: none }
@@ -57,10 +54,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   }
 }));
 
-// API Routes
 app.use('/api', routes);
 
-// Health check route
 app.get('/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'OK', 
@@ -71,9 +66,7 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// Serve frontend for all non-API routes (SPA support)
 app.get('*', (req: Request, res: Response) => {
-  // If it's an API route, return 404 JSON
   if (req.path.startsWith('/api')) {
     res.status(404).json({ 
       success: false,
@@ -84,7 +77,6 @@ app.get('*', (req: Request, res: Response) => {
     return;
   }
 
-  // For all other routes, serve the frontend index.html (SPA)
   const indexPath = path.join(frontendDistPath, 'index.html');
   if (require('fs').existsSync(indexPath)) {
     res.sendFile(indexPath);
@@ -99,8 +91,7 @@ app.get('*', (req: Request, res: Response) => {
   }
 });
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response) => {
   console.error('Error:', err.stack);
   res.status(500).json({ 
     success: false,
@@ -114,5 +105,3 @@ app.listen(PORT, () => {
   console.log(`📚 API documentation available at http://localhost:${PORT}/api-docs`);
   console.log(`🔗 API endpoints available at http://localhost:${PORT}/api`);
 });
-
-export default app; 

@@ -1,4 +1,3 @@
-// GitHub Auth types
 export interface GitHubAuthRequest {
   code: string;
   client_id: string;
@@ -13,7 +12,6 @@ export interface GitHubAuthResponse {
   };
 }
 
-// Process request types
 export interface ProcessRequest {
   prompt: string;
   apiKey?: string;
@@ -36,7 +34,6 @@ export interface ProcessResponse {
   };
 }
 
-// Generic API response
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;

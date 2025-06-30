@@ -28,10 +28,8 @@ export class ProcessService {
 
             const githubInfo = validationResult.githubInfo!;
             
-            // Determine branch name - use provided branch or generate new one
             const branchName = request.branch || await this.getBranchName(request);
             
-            // Only create a new branch if no specific branch was provided
             if (!request.branch) {
                 console.log('🌱 Creating new branch...');
                 await this.createBranch(request.githubToken!, githubInfo, branchName);
@@ -167,19 +165,15 @@ Return ONLY the complete branch name with prefix, nothing else.`;
 
         let branchName = aiResponse.content.trim().toLowerCase();
         
-        // Clean the branch name - ensure it follows the format
         branchName = branchName.replace(/[^a-z0-9-\/]/g, '-');
         
-        // Ensure it has a valid prefix
         const validPrefixes = ['feature/', 'bugfix/', 'hotfix/'];
         const hasValidPrefix = validPrefixes.some(prefix => branchName.startsWith(prefix));
         
         if (!hasValidPrefix) {
-            // Default to feature/ if no valid prefix is detected
             branchName = `feature/${branchName}`;
         }
         
-        // Limit total length to 50 characters
         branchName = branchName.substring(0, 50);
         
         console.log('🌿 Generated branch name:', branchName);
