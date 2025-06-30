@@ -1,4 +1,4 @@
-![Status](https://img.shields.io/badge/Status-Alpha-FF6B6B?style=for-the-badge&logo=rocket&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) [![License](https://img.shields.io/badge/License-MIT-4ECDC4?style=for-the-badge&logo=mit&logoColor=white)](LICENSE) ![AI Powered](https://img.shields.io/badge/AI-Powered-9B59B6?style=for-the-badge&logo=openai&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Alpha-FF6B6B?style=for-the-badge&logo=rocket&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=node.js&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) [![License](https://img.shields.io/badge/License-MIT-4ECDC4?style=for-the-badge&logo=mit&logoColor=white)](LICENSE) ![AI Powered](https://img.shields.io/badge/AI-Powered-9B59B6?style=for-the-badge&logo=openai&logoColor=white)
 
 # ClaudeCodex
 
