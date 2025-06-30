@@ -21,7 +21,7 @@ The fastest way to get ClaudeCodex running is with our pre-built Docker image:
 
 **Option 1: Direct Token**
 ```bash
-docker run -e GITHUB_TOKEN=ghp_xxx \
+docker run -e GITHUB_TOKEN=[ghp_xxx] \
            -e API_KEY=[sk-...-xxx] \ # Optional
            claudecodx/claudecodx:v1.0.0-alpha
 ```
