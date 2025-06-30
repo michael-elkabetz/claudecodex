@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    container_name: claudecodex_backend
+    environment:
+      - GITHUB_CLIENT_SECRET=[GITHUB_CLIENT_SECRET]
+    ports:
+      - "3000:3000"
+    networks:
+      - claudecodex_network
+
+  frontend:
+    build: ./frontend
+    container_name: claudecodex_frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_GITHUB_CLIENT_ID=[VITE_GITHUB_CLIENT_ID]
+      - VITE_GITHUB_REDIRECT_URI=[VITE_GITHUB_REDIRECT_URI]
+      - VITE_API_URL=http://backend:3000/api
+    depends_on:
+      - backend
+      - mcp
+    networks:
+      - claudecodex_network
+
+  mcp:
+    build: ./mcp
+    container_name: claudecodex_mcp
+    ports:
+      - "12500:12500"
+    environment:
+      - API_URL=http://backend:3000/api/core
+    networks:
+      - claudecodex_network
+
+networks:
+  claudecodex_network:
+    driver: bridge 

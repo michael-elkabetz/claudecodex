@@ -1,0 +1,22 @@
+{
+  "name": "claudecodex",
+  "version": "1.0.0-alpha",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "alpha",
+    "react",
+    "node",
+    "express",
+    "ai"
+  ],
+  "scripts": {
+    "dev": "cd backend && npm run dev && cd ../frontend && npm run dev && cd ../mcp && npm run dev",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build && cd ../mcp && npm run build",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install && cd ../mcp && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:mcp": "cd mcp && npm install"
+  }
+}

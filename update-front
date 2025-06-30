@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+echo "Starting update process..."
+
+echo "Building frontend..."
+cd frontend
+npm run build
+
+cd ..
+
+echo "Cleaning backend/public directory..."
+rm -rf backend/public
+
+echo "Copying built files to backend/public..."
+mkdir backend/public/
+cp -r frontend/dist/* backend/public/
+
+echo "Update process completed successfully!"
