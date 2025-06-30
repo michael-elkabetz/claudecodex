@@ -11,7 +11,7 @@ export interface ProcessRequest {
   prompt: string;
   apiKey?: string;
   githubUrl: string;
-  githubToken: string;
+  githubToken?: string;
   files?: UploadedFile[];
   branch?: string;
 }

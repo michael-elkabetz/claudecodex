@@ -6,7 +6,10 @@ import { ToolDefinition } from "./tool-definition.js";
 const PROCESS_REQUEST_SCHEMA = z.object({
   prompt: z.string().describe("The prompt for the AI model"),
   githubUrl: z.string().describe("The URL of the GitHub repository"),
-  githubToken: z.string().describe("The GitHub token for authentication"),
+  githubToken: z
+    .string()
+    .optional()
+    .describe("The optional GitHub token for authentication"),
   apiKey: z
     .string()
     .optional()
