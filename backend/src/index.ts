@@ -14,13 +14,11 @@ import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
 import { body, validationResult } from 'express-validator';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -40,17 +38,15 @@ app.use(helmet({
   }
 }));
 
-// CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://yourdomain.com'] // Replace with your actual domain
+    ? ['https://www.claudecodex.com/']
     : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
 }));
 
-// Compression middleware for better performance
 app.use(compression({
   level: 6,
   threshold: 1024,
@@ -62,7 +58,6 @@ app.use(compression({
   }
 }));
 
-// Request parsing middleware
 app.use(express.json({
   limit: '10mb',
   type: ['application/json', 'text/plain']
@@ -74,39 +69,35 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 
-// Security sanitization middleware
-app.use(mongoSanitize()); // Prevent NoSQL injection attacks
-app.use(hpp({ // Prevent HTTP Parameter Pollution
+app.use(mongoSanitize());
+app.use(hpp({
   whitelist: ['sort', 'fields', 'page', 'limit']
 }));
 
-// Logging middleware
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
 } else {
   app.use(morgan('dev'));
 }
 
-// Enhanced rate limiting middleware
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again later.',
     retryAfter: '15 minutes'
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks and static files
     return req.path === '/health' || req.path.startsWith('/static');
   }
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100, // Limit each IP to 100 API requests per windowMs
+  windowMs: 60 * 1000,
+  max: 100,
   message: {
     success: false,
     error: 'Too many API requests from this IP, please try again later.',
@@ -116,22 +107,19 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Strict rate limiting for authentication endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit to 5 auth attempts per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: {
     success: false,
     error: 'Too many authentication attempts, please try again later.',
     retryAfter: '15 minutes'
   },
-  skipSuccessfulRequests: true, // Don't count successful requests
+  skipSuccessfulRequests: true,
 });
 
-// Apply general rate limiting to all routes
 app.use(generalLimiter);
 
-// Static file serving
 app.use('/static', express.static(path.join(__dirname, '../public'), {
   maxAge: '1d',
   etag: true
@@ -144,14 +132,12 @@ app.use('/favicon.ico', express.static(path.join(__dirname, '../public/favicon.i
   maxAge: '1d'
 }));
 
-// Serve frontend build files
 const frontendDistPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendDistPath, {
   maxAge: '1h',
   etag: true
 }));
 
-// Content type validation middleware
 const validateContentType = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'POST' || req.method === 'PUT') {
     const contentType = req.get('Content-Type');
@@ -167,7 +153,6 @@ const validateContentType = (req: Request, res: Response, next: NextFunction) =>
   next();
 };
 
-// Input validation middleware for common endpoints
 const validateApiKey = body('apiKey')
   .optional()
   .isLength({ min: 10 })
@@ -189,7 +174,6 @@ const validateGitHubUrl = body('githubUrl')
   .contains('github.com')
   .withMessage('URL must be a GitHub repository');
 
-// Request logging middleware (enhanced)
 app.use((req: Request, res: Response, next: NextFunction) => {
   const timestamp = new Date().toISOString();
   const userAgent = req.get('User-Agent') || 'Unknown';
@@ -197,7 +181,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${ip} - UA: ${userAgent.substring(0, 100)}`);
 
-  // Log sensitive endpoints with additional security info
   if (req.path.includes('/auth') || req.path.includes('/process')) {
     console.log(`🔐 Security-sensitive endpoint accessed: ${req.method} ${req.path}`);
   }
@@ -205,7 +188,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// API documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   customCss: `
     .swagger-ui .topbar { display: none }
@@ -226,14 +208,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   }
 }));
 
-// Apply stricter rate limiting to API routes
 app.use('/api', apiLimiter, validateContentType, routes);
 
-// Apply strict rate limiting to auth endpoints
 app.use('/api/*/github-auth', authLimiter);
-app.use('/api/*/process', authLimiter); // Also limit the main processing endpoint
+app.use('/api/*/process', authLimiter);
 
-// Health check endpoint (with minimal rate limiting)
 app.get('/health', (req: Request, res: Response) => {
   res.json({
     status: 'OK',
@@ -245,7 +224,6 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// Catch-all route handler
 app.get('*', (req: Request, res: Response) => {
   if (req.path.startsWith('/api')) {
     res.status(404).json({
@@ -271,7 +249,6 @@ app.get('*', (req: Request, res: Response) => {
   }
 });
 
-// Enhanced error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', {
     message: err.message,
@@ -282,7 +259,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     timestamp: new Date().toISOString()
   });
 
-  // Handle specific error types
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
