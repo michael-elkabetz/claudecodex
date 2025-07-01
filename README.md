@@ -272,8 +272,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ![Claude](https://img.shields.io/badge/Powered_by-Claude-D97757?style=flat&logo=claude&logoColor=white) ![OpenAI](https://img.shields.io/badge/Powered_by-OpenAI-412991?style=flat&logo=openai&logoColor=white) ![GitHub](https://img.shields.io/badge/Hosted_on-GitHub-171515?style=flat&logo=github&logoColor=white)
 
-- Thanks to Anthropic for Claude AI
-- Thanks to OpenAI for their amazing models
+- Thanks to Anthropic for Claude Code
+- Thanks to OpenAI for Codex
 - Thanks to the open-source community
 
 ---
