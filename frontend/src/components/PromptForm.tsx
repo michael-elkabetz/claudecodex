@@ -2,6 +2,7 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
+import {Badge} from "@/components/ui/badge";
 import {useEffect, useState, useRef, KeyboardEvent} from "react";
 import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
@@ -575,8 +576,13 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                {apiKey.startsWith('sk-ant-') ? (
+                                    <Badge variant="default">ClaudeCode</Badge>
+                                ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
+                                    <Badge variant="secondary">Codex</Badge>
+                                ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
@@ -800,8 +806,13 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                {apiKey.startsWith('sk-ant-') ? (
+                                    <Badge variant="default">ClaudeCode</Badge>
+                                ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
+                                    <Badge variant="secondary">Codex</Badge>
+                                ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
