@@ -578,9 +578,11 @@ const PromptForm = () => {
                         <div className="space-y-0 group">
                             <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
-                                <Badge variant={apiKey.startsWith('sk-ant-') ? 'default' : 'secondary'}>
-                                    {apiKey.startsWith('sk-ant-') ? 'ClaudeCode' : 'Codex'}
-                                </Badge>
+                                {apiKey.startsWith('sk-ant-') ? (
+                                    <Badge variant="default">ClaudeCode</Badge>
+                                ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
+                                    <Badge variant="secondary">Codex</Badge>
+                                ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
@@ -806,9 +808,11 @@ const PromptForm = () => {
                         <div className="space-y-0 group">
                             <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
-                                <Badge variant={apiKey.startsWith('sk-ant-') ? 'default' : 'secondary'}>
-                                    {apiKey.startsWith('sk-ant-') ? 'ClaudeCode' : 'Codex'}
-                                </Badge>
+                                {apiKey.startsWith('sk-ant-') ? (
+                                    <Badge variant="default">ClaudeCode</Badge>
+                                ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
+                                    <Badge variant="secondary">Codex</Badge>
+                                ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
