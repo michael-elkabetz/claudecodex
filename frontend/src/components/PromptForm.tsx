@@ -575,8 +575,13 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                {apiKey && (
+                                    <span className="text-xs font-medium px-2 py-1 rounded-md bg-blue-100 text-blue-800">
+                                        {apiKey.startsWith('sk-ant-') ? 'ClaudeCode' : 'Codex'}
+                                    </span>
+                                )}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
@@ -800,8 +805,13 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
                                 <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                {apiKey && (
+                                    <span className="text-xs font-medium px-2 py-1 rounded-md bg-blue-100 text-blue-800">
+                                        {apiKey.startsWith('sk-ant-') ? 'ClaudeCode' : 'Codex'}
+                                    </span>
+                                )}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
