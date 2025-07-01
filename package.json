@@ -18,5 +18,10 @@
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install:mcp": "cd mcp && npm install"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/hpp": "^0.2.6",
+    "@types/morgan": "^1.9.10"
   }
 }
