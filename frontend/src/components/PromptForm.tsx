@@ -13,6 +13,7 @@ const PromptForm = () => {
     const [githubUrl, setGithubUrl] = useState("");
     const [prompt, setPrompt] = useState("");
     const [apiKey, setApiKey] = useState("");
+    const agentName = apiKey.startsWith("sk-ant-") ? "ClaudeCode" : "Codex";
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [prUrl, setPrUrl] = useState("");
@@ -575,8 +576,9 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex justify-between items-center">
                                 <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                <span className="text-sm font-medium text-gray-700">{agentName}</span>
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
@@ -800,8 +802,9 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
+                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex justify-between items-center">
                                 <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                                <span className="text-sm font-medium text-gray-700">{agentName}</span>
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
                                 <div className="relative">
