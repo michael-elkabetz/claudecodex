@@ -39,7 +39,7 @@ export class ProcessService {
             
             await this.cloneBranch(request.githubUrl!, branchName, request.githubToken!, gitService);
             await this.generateCode(request, gitService, branchName);
-            const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!);
+            const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!, gitService, request.apiKey!);
 
             // Determine if this is a new or existing PR
             let successMessage = 'Pull request created successfully!';
@@ -245,25 +245,60 @@ Return ONLY the complete branch name with prefix, nothing else.`;
         return enhancedPrompt;
     }
 
+    async generatePRDescription(apiKey: string, originalPrompt: string, changeSummary: {
+        totalFiles: number;
+        changes: Array<{
+            path: string;
+            status: string;
+        }>;
+    }): Promise<string> {
+        console.log('🤖 Generating PR description with AI...');
+
+        const aiProvider = this.aiService.detectProvider(apiKey);
+        
+        const changesText = changeSummary.changes
+            .map(change => `- ${change.path} (${change.status})`)
+            .join('\n');
+
+        const prDescriptionPrompt = `Generate a professional and informative pull request description based on the following information:
+
+**Original Request:** ${originalPrompt}
+
+**Files Changed (${changeSummary.totalFiles} files):**
+${changesText}
+
+Please create a clear and concise PR description that:
+1. Summarizes what was implemented
+2. Lists the key changes made
+3. Is professional and informative
+4. Uses markdown formatting appropriately
+
+Format the response as a complete PR description without any additional commentary. Do not include the PR title, just the body content.`;
+
+        let aiResponse: AIResponse;
+        if (aiProvider === 'anthropic') {
+            aiResponse = await this.aiService.generateBranchNameWithClaude(apiKey, prDescriptionPrompt);
+        } else {
+            aiResponse = await this.aiService.generateBranchNameWithGPT(apiKey, prDescriptionPrompt);
+        }
+
+        const prDescription = aiResponse.content.trim();
+        console.log('📄 Generated PR description');
+        
+        return prDescription;
+    }
+
     async createPR(githubToken: string, githubInfo: {
         owner: string;
         repo: string
-    }, branchName: string, prompt: string): Promise<any> {
+    }, branchName: string, prompt: string, gitService: GitService, apiKey: string): Promise<any> {
         console.log('🔄 Creating Pull Request...');
 
         const prTitle = `AI-Generated Changes: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`;
-        const prBody = `## AI-Generated Changes
-
-**Original Prompt:** ${prompt}
-
-**Changes Made:**
-- Updated README.md with timestamp and prompt information
-- Applied automatic formatting and documentation updates
-
-**Branch:** ${branchName}
-
----
-*This pull request was generated automatically using AI. Please review the changes before merging.*`;
+        
+        const changeSummary = await gitService.getChangeSummary();
+        
+        const prBody = await this.generatePRDescription(apiKey, prompt, changeSummary);
 
         try {
             const pullRequest = await this.githubService.createPullRequest(

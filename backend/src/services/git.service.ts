@@ -80,4 +80,46 @@ export class GitService {
     getWorkDir(): string {
         return this.workDir;
     }
+
+    async getChangeSummary(): Promise<{
+        totalFiles: number;
+        changes: Array<{
+            path: string;
+            status: string;
+        }>;
+    }> {
+        try {
+            const status = await this.git.status();
+            
+            const changes = status.files.map(file => {
+                let statusDescription = 'modified';
+                
+                if (file.index === 'M') {
+                    statusDescription = 'modified';
+                } else if (file.index === 'A') {
+                    statusDescription = 'added';
+                } else if (file.index === 'D') {
+                    statusDescription = 'deleted';
+                } else if (!file.index) {
+                    statusDescription = 'new file';
+                }
+                
+                return {
+                    path: file.path,
+                    status: statusDescription
+                };
+            });
+
+            return {
+                totalFiles: status.files.length,
+                changes
+            };
+        } catch (error) {
+            console.error('Error getting change summary:', error);
+            return {
+                totalFiles: 0,
+                changes: []
+            };
+        }
+    }
 }
