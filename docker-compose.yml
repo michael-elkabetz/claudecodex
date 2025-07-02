@@ -30,7 +30,7 @@ services:
     ports:
       - "6213:6213"
     environment:
-      - API_URL=http://backend:3000/api/core
+      - DEV_API_URL=http://backend:3000/api/dev
     networks:
       - claudecodex_network
 

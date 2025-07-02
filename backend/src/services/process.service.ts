@@ -1,4 +1,4 @@
-import {ProcessRequest, ProcessResponse} from '../types/api.types';
+import {ActionRequest, ActionResponse} from '../types/api.types';
 import {GitHubService} from './github.service';
 import {AIResponse, AIService} from './ai.service';
 import {GitService} from './git.service';
@@ -14,7 +14,7 @@ export class ProcessService {
         this.aiService = new AIService();
     }
 
-    async processRequest(request: ProcessRequest): Promise<ProcessResponse> {
+    async processRequest(request: ActionRequest): Promise<ActionResponse> {
         const gitService = new GitService();
 
         try {
@@ -81,7 +81,7 @@ export class ProcessService {
         }
     }
 
-    async validate(request: ProcessRequest): Promise<{
+    async validate(request: ActionRequest): Promise<{
         isValid: boolean;
         error?: string;
         githubInfo?: { owner: string; repo: string }
@@ -145,7 +145,7 @@ export class ProcessService {
             .replace('{CHANGES_TEXT}', changesText);
     }
 
-    async getBranchName(request: ProcessRequest): Promise<string> {
+    async getBranchName(request: ActionRequest): Promise<string> {
         console.log('🤖 Getting branch name from AI...');
 
         if (!request.apiKey || !request.prompt) {
@@ -199,7 +199,7 @@ export class ProcessService {
         console.log('📁 Repository cloned to:', gitService.getWorkDir());
     }
 
-    async generateCode(request: ProcessRequest, gitService: GitService, branchName: string): Promise<void> {
+    async generateCode(request: ActionRequest, gitService: GitService, branchName: string): Promise<void> {
         if (request.apiKey) {
             const aiProvider = this.aiService.detectProvider(request.apiKey);
             const workspacePath = gitService.getWorkDir();

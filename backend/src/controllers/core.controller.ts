@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import { GitHubService } from '../services/github.service';
 import { ProcessService } from '../services/process.service';
-import { GitHubAuthRequest, ProcessRequest, ApiResponse } from '../types/api.types';
+import { GitService } from '../services/git.service';
+import { GitHubAuthRequest, ActionRequest, ApiResponse } from '../types/api.types';
 
 const storage = multer.memoryStorage();
 export const upload = multer({ 
@@ -21,7 +22,7 @@ export const upload = multer({
   }
 });
 
-export class CoreController {
+export class DevController {
   private githubService: GitHubService;
   private processService: ProcessService;
 
@@ -59,9 +60,9 @@ export class CoreController {
     }
   };
 
-  process = async (req: Request, res: Response): Promise<void> => {
+  actions = async (req: Request, res: Response): Promise<void> => {
     try {
-      const processRequest: ProcessRequest = {
+      const actionRequest: ActionRequest = {
         prompt: req.body.prompt,
         apiKey: req.body.apiKey,
         githubUrl: req.body.githubUrl,
@@ -69,24 +70,77 @@ export class CoreController {
         githubToken: req.body.githubToken?.trim() || process.env.GITHUB_TOKEN,
         files: req.files as Express.Multer.File[]
       };
+      const { action } = req.body;
 
-      if (!processRequest.prompt || !processRequest.githubUrl || !processRequest.githubToken) {
-        res.status(400).json({
-          success: false,
-          message: 'Missing required fields: prompt, githubUrl, githubToken. Provide githubToken in the request or set the GITHUB_TOKEN environment variable.'
-        } as ApiResponse);
+      if (!action) {
+        res.status(400).json({ success: false, message: 'Missing required field: action' } as ApiResponse);
         return;
       }
 
-      const result = await this.processService.processRequest(processRequest);
-      
-      if (result.success) {
-        res.status(200).json(result);
-      } else {
-        res.status(400).json(result);
+      const validationResult = await this.processService.validate(actionRequest);
+      if (!validationResult.isValid) {
+        res.status(400).json({ success: false, message: validationResult.error } as ApiResponse);
+        return;
       }
+      const githubInfo = validationResult.githubInfo!;
+      const gitService = new GitService();
+
+      let response: ActionResponse;
+      switch (action) {
+        case 'createBranch': {
+          const branchName = actionRequest.branch || await this.processService.getBranchName(actionRequest);
+          await this.processService.createBranch(actionRequest.githubToken!, githubInfo, branchName);
+          await this.processService.cloneBranch(actionRequest.githubUrl, branchName, actionRequest.githubToken!, gitService);
+          await this.processService.generateCode(actionRequest, gitService, branchName);
+          response = {
+            success: true,
+            message: 'Branch creation and code generation completed successfully',
+            data: {
+              pullRequestUrl: '',
+              branchName,
+              pullRequestNumber: 0,
+              processedAt: new Date().toISOString(),
+              repositoryName: githubInfo.repo,
+              repositoryOwner: githubInfo.owner,
+            }
+          };
+          break;
+        }
+        case 'createPR': {
+          if (!actionRequest.branch) {
+            res.status(400).json({ success: false, message: 'Missing required field: branch for createPR action' } as ApiResponse);
+            return;
+          }
+          const pullRequest = await this.processService.createPR(
+            actionRequest.githubToken!,
+            githubInfo,
+            actionRequest.branch,
+            actionRequest.prompt!,
+            gitService,
+            actionRequest.apiKey!
+          );
+          response = {
+            success: true,
+            message: 'Pull request created successfully',
+            data: {
+              pullRequestUrl: pullRequest.html_url,
+              branchName: actionRequest.branch,
+              pullRequestNumber: pullRequest.number,
+              processedAt: new Date().toISOString(),
+              repositoryName: githubInfo.repo,
+              repositoryOwner: githubInfo.owner,
+            }
+          };
+          break;
+        }
+        default:
+          res.status(400).json({ success: false, message: `Unknown action: ${action}` } as ApiResponse);
+          return;
+      }
+
+      res.status(200).json(response);
     } catch (error) {
-      console.error('Error in process:', error);
+      console.error('Error in actions:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -98,7 +152,7 @@ export class CoreController {
   health = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
-      message: 'Core service is healthy',
+      message: 'Dev service is healthy',
       data: {
         timestamp: new Date().toISOString(),
         uptime: process.uptime()

@@ -1,12 +1,13 @@
+
 import { Router } from 'express';
-import { CoreController, upload } from '../controllers/core.controller';
+import { DevController, upload } from '../controllers/core.controller';
 
 const router = Router();
-const coreController = new CoreController();
+const devController = new DevController();
 
 /**
  * @swagger
- * /api/core/github-auth:
+ * /api/dev/github-auth:
  *   post:
  *     summary: 🔐 Exchange GitHub OAuth code for access token
  *     description: |
@@ -51,11 +52,11 @@ const coreController = new CoreController();
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/github-auth', coreController.githubAuth);
+router.post('/github-auth', devController.githubAuth);
 
 /**
  * @swagger
- * /api/core/branches:
+ * /api/dev/branches:
  *   post:
  *     summary: 🌿 Get branches from GitHub repository
  *     description: |
@@ -131,11 +132,11 @@ router.post('/github-auth', coreController.githubAuth);
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/branches', coreController.getBranches);
+router.post('/branches', devController.getBranches);
 
 /**
  * @swagger
- * /api/core/process:
+ * /api/dev/actions:
  *   post:
  *     summary: 🤖 Generate code and create pull request
  *     description: | 
@@ -156,7 +157,7 @@ router.post('/branches', coreController.getBranches);
  *       **File Support:**
  *       - Supports uploading multiple files (max 10 files, 10MB each)
  *       - Supported file types: txt, md, js, ts, jsx, tsx, py, java, cpp, c, h, css, html, json, xml, yml, yaml, pdf, doc, docx, xls, xlsx
- *     tags: [Core]
+ *     tags: [Dev]
  *     requestBody:
  *       required: true
  *       content:
@@ -197,8 +198,8 @@ router.post('/branches', coreController.getBranches);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProcessResponse'
- *             example:
+*               $ref: '#/components/schemas/ActionResponse'
+*             example:
  *               success: true
  *               message: "Pull request created successfully!"
  *               data:
@@ -224,14 +225,14 @@ router.post('/branches', coreController.getBranches);
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/process', upload.array('files', 10), coreController.process);
+router.post('/actions', upload.array('files', 10), devController.actions);
 
 /**
  * @swagger
- * /api/core/health:
+ * /api/dev/health:
  *   get:
  *     summary: 🏥 Check service health
- *     description: Returns the health status of the core service
+*     description: Returns the health status of the dev service
  *     tags: [Health]
  *     responses:
  *       200:
@@ -242,11 +243,11 @@ router.post('/process', upload.array('files', 10), coreController.process);
  *               $ref: '#/components/schemas/HealthResponse'
  *             example:
  *               success: true
- *               message: "Core service is healthy"
+*               message: "Dev service is healthy"
  *               data:
  *                 timestamp: "2024-01-15T10:30:00.000Z"
  *                 uptime: 3600
  */
-router.get('/health', coreController.health);
+router.get('/health', devController.health);
 
 export default router; 

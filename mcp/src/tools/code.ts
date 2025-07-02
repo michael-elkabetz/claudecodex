@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { CoreService } from "../services/core-service.js";
-import { ProcessRequest } from "../types/api.types.js";
+import { DevService } from "../services/core-service.js";
+import { ActionRequest } from "../types/api.types.js";
 import { ToolDefinition } from "./tool-definition.js";
 
 const PROCESS_REQUEST_SCHEMA = z.object({
@@ -28,8 +28,8 @@ export function defineProcessRequestTool(): ToolDefinition<
     schema: PROCESS_REQUEST_SCHEMA,
     isReadOnly: false,
     execute: async (params: z.infer<typeof PROCESS_REQUEST_SCHEMA>) => {
-      const coreService = new CoreService();
-      const result = await coreService.processRequest(params as ProcessRequest);
+      const devService = new DevService();
+      const result = await devService.processRequest(params as ActionRequest);
 
       if (result.success) {
         return {

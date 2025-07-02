@@ -19,8 +19,8 @@ const options: swaggerJsdoc.Options = {
         - 🔄 Pull request automation
         
         ## Getting Started
-        1. Authorize with GitHub using \`/api/core/github-auth\`
-        2. Submit your coding request via \`/api/core/process\`
+        1. Authorize with GitHub using \`/api/dev/github-auth\`
+        2. Submit your coding request via \`/api/dev/actions\`
         3. Get your pull request URL instantly!
       `,
       contact: {
@@ -87,7 +87,7 @@ const options: swaggerJsdoc.Options = {
             }
           }
         },
-        ProcessRequest: {
+        ActionRequest: {
           type: 'object',
           required: ['prompt', 'apiKey', 'githubUrl'],
           properties: {
@@ -113,7 +113,7 @@ const options: swaggerJsdoc.Options = {
             }
           }
         },
-        ProcessResponse: {
+        ActionResponse: {
           type: 'object',
           properties: {
             success: {
@@ -216,8 +216,8 @@ const options: swaggerJsdoc.Options = {
         description: '🔐 GitHub OAuth operations'
       },
       {
-        name: 'Core',
-        description: '🤖 Main AI-powered code generation'
+        name: 'Dev',
+        description: '🤖 Main AI-powered development actions'
       },
       {
         name: 'Health',

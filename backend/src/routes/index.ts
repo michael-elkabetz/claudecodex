@@ -3,7 +3,7 @@ import coreRoutes from './core.routes';
 
 const router = Router();
 
-router.use('/core', coreRoutes);
+router.use('/dev', coreRoutes);
 
 /**
  * @swagger
@@ -37,9 +37,9 @@ router.use('/core', coreRoutes);
  *                 endpoints:
  *                   type: object
  *                   properties:
- *                     core:
+ *                     dev:
  *                       type: string
- *                       example: "/api/core"
+ *                       example: "/api/dev"
  *                     health:
  *                       type: string
  *                       example: "/api/core/health"
@@ -56,10 +56,10 @@ router.get('/', (req, res) => {
     message: 'ClaudeCodex API',
     version: '1.0.0',
     endpoints: {
-      core: '/api/core',
-      health: '/api/core/health',
-      auth: '/api/core/github-auth',
-      process: '/api/core/process'
+      dev: '/api/dev',
+      health: '/api/dev/health',
+      auth: '/api/dev/github-auth',
+      actions: '/api/dev/actions'
     }
   });
 });
