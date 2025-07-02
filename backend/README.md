@@ -134,7 +134,7 @@ Content-Type: application/json
 **Main Processing Endpoint**
 
 ```http
-POST /api/core/process
+POST /api/core/developer
 Content-Type: application/json
 
 {

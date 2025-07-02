@@ -181,7 +181,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${ip} - UA: ${userAgent.substring(0, 100)}`);
 
-  if (req.path.includes('/auth') || req.path.includes('/process')) {
+  if (req.path.includes('/auth') || req.path.includes('/developer')) {
     console.log(`🔐 Security-sensitive endpoint accessed: ${req.method} ${req.path}`);
   }
 
@@ -211,7 +211,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
 app.use('/api', apiLimiter, validateContentType, routes);
 
 app.use('/api/*/github-auth', authLimiter);
-app.use('/api/*/process', authLimiter);
+app.use('/api/*/developer', authLimiter);
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({

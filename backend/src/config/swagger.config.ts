@@ -20,7 +20,7 @@ const options: swaggerJsdoc.Options = {
         
         ## Getting Started
         1. Authorize with GitHub using \`/api/core/github-auth\`
-        2. Submit your coding request via \`/api/core/process\`
+        2. Submit your coding request via \`/api/core/developer\`
         3. Get your pull request URL instantly!
       `,
       contact: {

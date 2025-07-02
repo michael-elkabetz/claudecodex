@@ -46,9 +46,9 @@ router.use('/core', coreRoutes);
  *                     auth:
  *                       type: string
  *                       example: "/api/core/github-auth"
- *                     process:
+ *                     developer:
  *                       type: string
- *                       example: "/api/core/process"
+ *                       example: "/api/core/developer"
  */
 router.get('/', (req, res) => {
   res.json({
@@ -59,7 +59,7 @@ router.get('/', (req, res) => {
       core: '/api/core',
       health: '/api/core/health',
       auth: '/api/core/github-auth',
-      process: '/api/core/process'
+      developer: '/api/core/developer'
     }
   });
 });
