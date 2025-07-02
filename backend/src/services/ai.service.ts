@@ -113,8 +113,10 @@ export class AIService {
                 throw new Error('Invalid Anthropic API key format. Must start with sk-ant-');
             }
 
+            const sanitizedPrompt = this.sanitizePrompt(prompt);
+
             const result = await this.executeCLICommand('claude', ['-p', '--dangerously-skip-permissions'], {
-                input: prompt,
+                input: sanitizedPrompt,
                 env: {
                     ANTHROPIC_API_KEY: apiKey,
                 },
@@ -157,7 +159,9 @@ export class AIService {
                 throw new Error('Invalid OpenAI API key format. Must start with sk-');
             }
 
-            const result = await this.executeCLICommand('codex', ['-q', '-a', 'auto-edit', prompt], {
+            const sanitizedPrompt = this.sanitizePrompt(prompt);
+
+            const result = await this.executeCLICommand('codex', ['-q', '-a', 'auto-edit', sanitizedPrompt], {
                 env: {
                     OPENAI_API_KEY: apiKey,
                 },
@@ -257,5 +261,19 @@ export class AIService {
                 child.stdin.end();
             }
         });
+    }
+
+    private sanitizePrompt(prompt: string): string {
+        try {
+            let sanitized = prompt.replace(/\uFFFD/g, '');
+
+            sanitized = sanitized.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, '');
+            sanitized = sanitized.replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
+            const buffer = Buffer.from(sanitized, 'utf-8');
+            return buffer.toString('utf-8');
+        } catch (error) {
+            console.warn('⚠️  Error sanitizing prompt, using original:', error);
+            return prompt;
+        }
     }
 } 

@@ -231,8 +231,25 @@ Return ONLY the complete branch name with prefix, nothing else.`;
         
         for (const file of files) {
             try {
-                const fileContent = file.buffer.toString('utf-8');
-                enhancedPrompt += `\n**File: ${file.originalname}**\n\`\`\`\n${fileContent}\n\`\`\`\n`;
+                if (this.isBinaryFile(file.buffer)) {
+                    console.log(`📁 Skipping binary file: ${file.originalname}`);
+                    enhancedPrompt += `\n**File: ${file.originalname}** (binary file - content not included)\n`;
+                    continue;
+                }
+
+                const fileContent = this.validateAndConvertToUTF8(file.buffer);
+                if (fileContent === null) {
+                    console.warn(`⚠️  Invalid UTF-8 content in file ${file.originalname}`);
+                    enhancedPrompt += `\n**File: ${file.originalname}** (invalid UTF-8 encoding - content not included)\n`;
+                    continue;
+                }
+
+                const maxFileSize = 5000000;
+                const truncatedContent = fileContent.length > maxFileSize 
+                    ? fileContent.substring(0, maxFileSize) + '\n... (content truncated due to size)'
+                    : fileContent;
+
+                enhancedPrompt += `\n**File: ${file.originalname}**\n\`\`\`\n${truncatedContent}\n\`\`\`\n`;
                 console.log(`📄 Added file content: ${file.originalname} (${file.size} bytes)`);
             } catch (error) {
                 console.warn(`⚠️  Could not read file ${file.originalname}:`, error);
@@ -243,6 +260,65 @@ Return ONLY the complete branch name with prefix, nothing else.`;
         enhancedPrompt += '\n--- END OF UPLOADED FILES ---\n\nPlease consider the above files when implementing the requested changes.';
         
         return enhancedPrompt;
+    }
+
+    private isBinaryFile(buffer: Buffer): boolean {
+        // Check for common binary file signatures and null bytes
+        const sample = buffer.subarray(0, 8000); // Check first 8KB
+        
+        // Check for null bytes (common in binary files)
+        for (let i = 0; i < sample.length; i++) {
+            if (sample[i] === 0) {
+                return true;
+            }
+        }
+        
+        // Check for high ratio of non-printable characters
+        let nonPrintableCount = 0;
+        for (let i = 0; i < sample.length; i++) {
+            const byte = sample[i];
+            // Count non-printable ASCII characters (excluding common whitespace)
+            if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
+                nonPrintableCount++;
+            }
+        }
+        
+        return (nonPrintableCount / sample.length) > 0.3; // More than 30% non-printable
+    }
+
+    private validateAndConvertToUTF8(buffer: Buffer): string | null {
+        try {
+            const content = buffer.toString('utf-8');
+            
+            // Check for replacement characters which indicate invalid UTF-8
+            if (content.includes('\uFFFD')) {
+                return null;
+            }
+            
+            // Validate that the string doesn't contain unpaired surrogates
+            for (let i = 0; i < content.length; i++) {
+                const char = content.charCodeAt(i);
+                // Check for unpaired high surrogate
+                if (char >= 0xD800 && char <= 0xDBFF) {
+                    if (i + 1 >= content.length) {
+                        return null; // High surrogate at end of string
+                    }
+                    const nextChar = content.charCodeAt(i + 1);
+                    if (nextChar < 0xDC00 || nextChar > 0xDFFF) {
+                        return null; // High surrogate not followed by low surrogate
+                    }
+                    i++; // Skip the low surrogate
+                }
+                // Check for unpaired low surrogate
+                else if (char >= 0xDC00 && char <= 0xDFFF) {
+                    return null; // Low surrogate without preceding high surrogate
+                }
+            }
+            
+            return content;
+        } catch (error) {
+            return null;
+        }
     }
 
     async generatePRDescription(apiKey: string, originalPrompt: string, changeSummary: {
