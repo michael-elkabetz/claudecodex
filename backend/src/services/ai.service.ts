@@ -15,12 +15,12 @@ export class AIService {
     private anthropic: Anthropic | null = null;
     private openai: OpenAI | null = null;
 
-    private readonly DEFAULT_OPENAI_MODEL = 'codex-1';
+    private readonly DEFAULT_OPENAI_MODEL = 'codex-mini-latest';
     private readonly DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
     private readonly DEFAULT_GPT_MODEL = 'gpt-4o-mini';
 
     private readonly VALID_OPENAI_MODELS = [
-        'codex-1', 'codex-mini-latest'
+        'codex-mini-latest', 'o4-mini'
     ];
 
     private readonly VALID_ANTHROPIC_MODELS = [

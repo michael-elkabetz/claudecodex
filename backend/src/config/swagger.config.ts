@@ -96,14 +96,14 @@ const options: swaggerJsdoc.Options = {
             },
             model: {
               type: 'string',
-              description: 'AI model to use (optional). Defaults: claude-sonnet-4-20250514 for Anthropic, codex-1 for OpenAI',
+              description: 'AI model to use (optional). Defaults: claude-sonnet-4-20250514 for Anthropic, codex-mini-latest for OpenAI',
               example: 'claude-sonnet-4-20250514',
               enum: [
                 'claude-sonnet-4-20250514',
                 'claude-opus-4-20250514',
                 'claude-3.7-sonnet-20250219',
-                'codex-1',
-                'codex-mini-latest'
+                'codex-mini-latest',
+                'o4-mini',
               ]
             },
             githubUrl: {
