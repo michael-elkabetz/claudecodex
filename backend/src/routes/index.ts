@@ -18,7 +18,7 @@ router.use('/github', githubRoutes);
  *       **Welcome to the AI-Powered Code Generation API! 🚀**
  *       
  *       This API helps you automatically generate code changes and create pull requests using AI.
- *     tags: [Dev]
+ *     tags: [System]
  *     responses:
  *       200:
  *         description: ✅ API information
@@ -39,24 +39,18 @@ router.use('/github', githubRoutes);
  *                 endpoints:
  *                   type: object
  *                   properties:
- *                     dev:
+ *                     execute:
  *                       type: string
- *                       example: "/api/dev"
+ *                       example: "/api/dev/execute"
  *                     health:
  *                       type: string
- *                       example: "/api/dev/health"
- *                     auth:
+ *                       example: "/api/health"
+ *                     githubAuth:
  *                       type: string
- *                       example: "/api/dev/github-auth"
- *                     process:
+ *                       example: "/api/github/auth"
+ *                     githubBranches:
  *                       type: string
- *                       example: "/api/dev/process"
- *                     createBranch:
- *                       type: string
- *                       example: "/api/dev/create-branch"
- *                     createPR:
- *                       type: string
- *                       example: "/api/dev/create-pr"
+ *                       example: "/api/github/branches"
  */
 router.get('/', (req, res) => {
   res.json({
@@ -64,12 +58,10 @@ router.get('/', (req, res) => {
     message: 'ClaudeCodex API',
     version: '1.0.0',
     endpoints: {
-      dev: '/api/dev',
-      health: '/api/dev/health',
-      auth: '/api/dev/github-auth',
-      process: '/api/dev/process',
-      createBranch: '/api/dev/create-branch',
-      createPR: '/api/dev/create-pr'
+      execute: '/api/dev/execute',
+      health: '/api/health',
+      githubAuth: '/api/github/auth',
+      githubBranches: '/api/github/branches'
     }
   });
 });

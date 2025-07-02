@@ -173,11 +173,12 @@ const mcpClient = new MCPClient({
   }
 });
 
-// Generate code
-const result = await mcpClient.call('generate_code', {
+// Execute complete AI workflow
+const result = await mcpClient.call('execute', {
   prompt: 'Create a React component for user authentication',
-  language: 'typescript',
-  framework: 'react'
+  githubUrl: 'https://github.com/username/repository',
+  githubToken: 'ghp_xxxxxxxxxxxxxxxxxxxx',
+  apiKey: 'sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx'
 });
 ```
 
@@ -193,49 +194,31 @@ The MCP server provides these tools:
 
 ```json
 {
-  "name": "generate_code",
-  "description": "Generate code using AI models",
+  "name": "execute",
+  "description": "Execute complete AI-powered workflow: generates code, creates branch, commits changes, and creates pull request",
   "parameters": {
     "prompt": "Description of code to generate",
-    "language": "Programming language (optional)",
+    "githubUrl": "GitHub repository URL",
+    "githubToken": "GitHub access token (optional)",
+    "apiKey": "AI API key (optional)",
     "framework": "Framework to use (optional)",
     "style": "Code style preferences (optional)"
   }
 }
 ```
 
-### 🔗 GitHub Operations
+### ✨ Complete Workflow
 
-![GitHub Tool](https://img.shields.io/badge/🔗_github-ops-171515?style=flat&logo=github&logoColor=white)
+The `execute` tool provides a complete AI-powered development workflow that:
 
-```json
-{
-  "name": "github_operations",
-  "description": "Perform GitHub repository operations",
-  "parameters": {
-    "action": "create|update|delete|clone",
-    "repository": "Repository name",
-    "content": "File content (for create/update)",
-    "path": "File path"
-  }
-}
-```
+1. **🧠 AI Branch Generation** - Creates descriptive branch names
+2. **🌿 Branch Creation** - Creates new Git branches
+3. **📥 Repository Cloning** - Clones the target repository
+4. **🤖 Code Generation** - Uses AI to generate/modify code
+5. **💾 Automated Commits** - Commits changes with meaningful messages
+6. **🔄 Pull Request Creation** - Automatically creates PRs with generated changes
 
-### 📁 File Management
-
-![File Tool](https://img.shields.io/badge/📁_file-ops-3498DB?style=flat&logoColor=white)
-
-```json
-{
-  "name": "file_operations",
-  "description": "Manage project files and directories",
-  "parameters": {
-    "action": "read|write|delete|list",
-    "path": "File or directory path",
-    "content": "File content (for write)"
-  }
-}
-```
+This single tool replaces the need for multiple separate tools, providing a streamlined experience.
 
 ## 🏗️ Architecture
 
@@ -380,10 +363,12 @@ POST /mcp/tools/call
 Content-Type: application/json
 
 {
-  "tool": "generate_code",
+  "tool": "execute",
   "parameters": {
-    "prompt": "Create a React component",
-    "language": "typescript"
+    "prompt": "Create a React component for user authentication",
+    "githubUrl": "https://github.com/username/repository",
+    "githubToken": "ghp_xxxxxxxxxxxxxxxxxxxx",
+    "apiKey": "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx"
   }
 }
 ```

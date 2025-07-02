@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
 import { ProcessService } from '../services/process.service';
-import { ProcessRequest, ApiResponse } from '../types/api.types';
+import { ExecuteRequest, ApiResponse } from '../types/api.types';
 
 const storage = multer.memoryStorage();
 export const upload = multer({ 
@@ -30,7 +30,7 @@ export class DevController {
 
   process = async (req: Request, res: Response): Promise<void> => {
     try {
-      const processRequest: ProcessRequest = {
+      const processRequest: ExecuteRequest = {
         prompt: req.body.prompt,
         apiKey: req.body.apiKey,
         githubUrl: req.body.githubUrl,

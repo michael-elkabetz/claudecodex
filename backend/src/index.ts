@@ -214,9 +214,31 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
 app.use('/api', apiLimiter, validateContentType, routes);
 
 app.use('/api/github/auth', authLimiter);
-app.use('/api/*/process', authLimiter);
+app.use('/api/*/execute', authLimiter);
 
-app.get('/health', (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: 🏥 System health check
+ *     description: Returns the current health status of the API
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: ✅ System is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthResponse'
+ *             example:
+ *               status: "OK"
+ *               timestamp: "2024-01-15T10:30:00.000Z"
+ *               uptime: 3600
+ *               version: "1.0.0"
+ *               service: "ClaudeCodex API"
+ *               environment: "development"
+ */
+app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -289,6 +311,5 @@ app.listen(PORT, () => {
   console.log(`🚀 ClaudeCodex backend is running on port ${PORT}`);
   console.log(`📚 API documentation available at http://localhost:${PORT}/api-docs`);
   console.log(`🔗 API endpoints available at http://localhost:${PORT}/api`);
-  console.log(`🛡️  Security middlewares: Helmet, CORS, Rate Limiting, Input Sanitization`);
-  console.log(`📊 Performance middlewares: Compression, Static File Caching`);
+
 });

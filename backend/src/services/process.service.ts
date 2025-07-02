@@ -1,4 +1,4 @@
-import {ProcessRequest, ProcessResponse} from '../types/api.types';
+import {ExecuteRequest, ExecuteResponse} from '../types/api.types';
 import {GitHubService} from './github.service';
 import {AIResponse, AIService} from './ai.service';
 import {GitService} from './git.service';
@@ -14,7 +14,7 @@ export class ProcessService {
         this.aiService = new AIService();
     }
 
-    async processRequest(request: ProcessRequest): Promise<ProcessResponse> {
+    async processRequest(request: ExecuteRequest): Promise<ExecuteResponse> {
         const gitService = new GitService();
 
         try {
@@ -44,25 +44,15 @@ export class ProcessService {
             const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!, gitService, request.apiKey!);
 
             let successMessage = 'Pull request created successfully!';
-            if (pullRequest.created_at) {
-                const createdTime = new Date(pullRequest.created_at);
-                const now = new Date();
-                const timeDiff = now.getTime() - createdTime.getTime();
-                const isNewPR = timeDiff < 60000;
-
-                if (!isNewPR) {
-                    successMessage = 'Code updated successfully! Existing pull request found.';
-                }
-            }
 
 
             return {
                 success: true,
                 message: successMessage,
                 data: {
-                    pullRequestUrl: pullRequest.html_url,
+                    pullRequestUrl: pullRequest.pullRequestUrl,
                     branchName: branchName,
-                    pullRequestNumber: pullRequest.number,
+                    pullRequestNumber: pullRequest.pullRequestNumber,
                     processedAt: new Date().toISOString(),
                     repositoryName: githubInfo.repo,
                     repositoryOwner: githubInfo.owner,
@@ -81,7 +71,7 @@ export class ProcessService {
         }
     }
 
-    async validate(request: ProcessRequest): Promise<{
+    async validate(request: ExecuteRequest): Promise<{
         isValid: boolean;
         error?: string;
         githubInfo?: { owner: string; repo: string }
@@ -145,7 +135,7 @@ export class ProcessService {
             .replace('{CHANGES_TEXT}', changesText);
     }
 
-    async getBranchName(request: ProcessRequest): Promise<string> {
+    async getBranchName(request: ExecuteRequest): Promise<string> {
         console.log('🤖 Getting branch name from AI...');
 
         if (!request.apiKey || !request.prompt) {
@@ -199,7 +189,7 @@ export class ProcessService {
         console.log('📁 Repository cloned to:', gitService.getWorkDir());
     }
 
-    async generateCode(request: ProcessRequest, gitService: GitService, branchName: string): Promise<void> {
+    async generateCode(request: ExecuteRequest, gitService: GitService, branchName: string): Promise<void> {
         if (request.apiKey) {
             const aiProvider = this.aiService.detectProvider(request.apiKey);
             const workspacePath = gitService.getWorkDir();

@@ -7,7 +7,7 @@ const devController = new DevController();
 
 /**
  * @swagger
- * /api/dev/process:
+ * /api/dev/execute:
  *   post:
  *     summary: 🤖 Generate code and create pull request
  *     description: | 
@@ -47,7 +47,7 @@ const devController = new DevController();
  *                 description: GitHub repository URL
  *               githubToken:
  *                 type: string
- *                 description: GitHub access token
+ *                 description: GitHub access token (optional - can be provided via GITHUB_TOKEN environment variable)
  *               files:
  *                 type: array
  *                 items:
@@ -57,7 +57,7 @@ const devController = new DevController();
  *             required:
  *               - prompt
  *               - githubUrl
- *               - githubToken
+ *
  *           example:
  *             prompt: "Add a new feature to calculate user statistics"
  *             apiKey: "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx"
@@ -69,7 +69,7 @@ const devController = new DevController();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProcessResponse'
+ *               $ref: '#/components/schemas/ExecuteResponse'
  *             example:
  *               success: true
  *               message: "Pull request created successfully!"
@@ -88,7 +88,7 @@ const devController = new DevController();
  *               $ref: '#/components/schemas/ApiResponse'
  *             example:
  *               success: false
- *               message: "Missing required fields: prompt, apiKey, githubUrl, githubToken"
+ *               message: "Missing required fields: prompt, githubUrl"
  *       500:
  *         description: 🔥 Processing error
  *         content:
@@ -96,31 +96,6 @@ const devController = new DevController();
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/process', upload.array('files', 10), devController.process);
-
-/**
- * @swagger
- * /api/dev/health:
- *   get:
- *     summary: 🏥 Check service health
- *     description: Returns the health status of the dev service
- *     tags: [Health]
- *     responses:
- *       200:
- *         description: ✅ Service is healthy
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/HealthResponse'
- *             example:
- *               success: true
- *               message: "Core service is healthy"
- *               data:
- *                 timestamp: "2024-01-15T10:30:00.000Z"
- *                 uptime: 3600
- */
-router.get('/health', devController.health);
-
-
+router.post('/execute', upload.array('files', 10), devController.process);
 
 export default router; 

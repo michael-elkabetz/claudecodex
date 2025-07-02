@@ -12,7 +12,7 @@ const githubController = new GitHubController();
  *     description: |
  *       Exchanges a GitHub OAuth authorization code for an access token.
  *       This endpoint is called after the user authorizes your application on GitHub.
- *     tags: [Authentication]
+ *     tags: [GitHub]
  *     requestBody:
  *       required: true
  *       content:
@@ -61,7 +61,7 @@ router.post('/auth', githubController.githubAuth);
  *     description: |
  *       Fetches all branches from a GitHub repository.
  *       Requires GitHub authorization token and repository URL.
- *     tags: [Repository]
+ *     tags: [GitHub]
  *     requestBody:
  *       required: true
  *       content:
@@ -113,101 +113,5 @@ router.post('/auth', githubController.githubAuth);
  *               $ref: '#/components/schemas/ApiResponse'
  */
 router.post('/branches', githubController.getBranches);
-
-/**
- * @swagger
- * /api/github/create-branch:
- *   post:
- *     summary: 🌿 Create a new branch with AI-generated name
- *     description: |
- *       Creates a new branch in the GitHub repository.
- *       Uses AI to generate a branch name based on the prompt if API key is provided.
- *     tags: [Actions]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               prompt:
- *                 type: string
- *                 description: Description for the branch
- *               apiKey:
- *                 type: string
- *                 description: AI API key (optional)
- *               githubUrl:
- *                 type: string
- *                 description: GitHub repository URL
- *               githubToken:
- *                 type: string
- *                 description: GitHub access token
- *               baseBranch:
- *                 type: string
- *                 description: Base branch name (default: main)
- *             required:
- *               - prompt
- *               - githubUrl
- *               - githubToken
- *     responses:
- *       200:
- *         description: ✅ Branch created successfully
- *       400:
- *         description: ❌ Invalid request parameters
- *       500:
- *         description: 🔥 Internal server error
- */
-router.post('/create-branch', githubController.createBranch);
-
-/**
- * @swagger
- * /api/github/create-pr:
- *   post:
- *     summary: 🔄 Create a pull request with AI-generated description
- *     description: |
- *       Creates a pull request for the specified branch.
- *       Uses AI to generate PR title and description if API key and prompt are provided.
- *     tags: [Actions]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               prompt:
- *                 type: string
- *                 description: Description for the PR (optional)
- *               apiKey:
- *                 type: string
- *                 description: AI API key (optional)
- *               githubUrl:
- *                 type: string
- *                 description: GitHub repository URL
- *               githubToken:
- *                 type: string
- *                 description: GitHub access token
- *               branchName:
- *                 type: string
- *                 description: Source branch name
- *               baseBranch:
- *                 type: string
- *                 description: Target branch name (default: main)
- *               title:
- *                 type: string
- *                 description: PR title (optional)
- *             required:
- *               - githubUrl
- *               - githubToken
- *               - branchName
- *     responses:
- *       200:
- *         description: ✅ Pull request created successfully
- *       400:
- *         description: ❌ Invalid request parameters
- *       500:
- *         description: 🔥 Internal server error
- */
-router.post('/create-pr', githubController.createPR);
 
 export default router;
