@@ -40,31 +40,11 @@ app.use(helmet({
   }
 }));
 
-// CORS configuration
 const corsOptions = {
-  origin: function (origin: string | undefined, callback: (error: Error | null, success?: boolean) => void) {
-    const allowedOrigins = process.env.NODE_ENV === 'production'
-      ? ['https://www.claudecodex.com', 'https://claudecodex.com', 'https://app.claudecodex.com']
-      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
-    
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) {
-      console.log('✅ CORS allowed for request with no origin');
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.includes(origin)) {
-      console.log(`✅ CORS allowed for origin: ${origin}`);
-      callback(null, true);
-    } else {
-      console.log(`❌ CORS blocked for origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'), false);
-    }
-  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Requested-With', 'Accept'],
-  maxAge: 86400 // 24 hours
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
