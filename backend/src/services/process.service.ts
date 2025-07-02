@@ -2,6 +2,8 @@ import {ProcessRequest, ProcessResponse} from '../types/api.types';
 import {GitHubService} from './github.service';
 import {AIResponse, AIService} from './ai.service';
 import {GitService} from './git.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class ProcessService {
     private githubService: GitHubService;
@@ -41,13 +43,12 @@ export class ProcessService {
             await this.generateCode(request, gitService, branchName);
             const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!, gitService, request.apiKey!);
 
-            // Determine if this is a new or existing PR
             let successMessage = 'Pull request created successfully!';
             if (pullRequest.created_at) {
                 const createdTime = new Date(pullRequest.created_at);
                 const now = new Date();
                 const timeDiff = now.getTime() - createdTime.getTime();
-                const isNewPR = timeDiff < 60000; // Less than 1 minute old
+                const isNewPR = timeDiff < 60000;
 
                 if (!isNewPR) {
                     successMessage = 'Code updated successfully! Existing pull request found.';
@@ -129,6 +130,21 @@ export class ProcessService {
         return {isValid: true, githubInfo};
     }
 
+    private getBranchPrompt(userPrompt: string): string {
+        const promptPath = path.join(__dirname, '../prompts/branch-naming.md');
+        const promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+        return promptTemplate.replace('{USER_PROMPT}', userPrompt);
+    }
+
+    private getPRPrompt(originalPrompt: string, totalFiles: number, changesText: string): string {
+        const promptPath = path.join(__dirname, '../prompts/pr-description.md');
+        const promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+        return promptTemplate
+            .replace('{USER_PROMPT}', originalPrompt)
+            .replace('{TOTAL_FILES}', totalFiles.toString())
+            .replace('{CHANGES_TEXT}', changesText);
+    }
+
     async getBranchName(request: ProcessRequest): Promise<string> {
         console.log('🤖 Getting branch name from AI...');
 
@@ -137,24 +153,7 @@ export class ProcessService {
         }
 
         const aiProvider = this.aiService.detectProvider(request.apiKey);
-        const branchPrompt = `Based on this prompt: "${request.prompt}", generate a git branch name following standard naming conventions.
-
-Use one of these three prefixes based on the type of work:
-- feature/ - for new features or enhancements
-- bugfix/ - for bug fixes
-- hotfix/ - for urgent production fixes
-
-Format: <prefix>/<short-descriptive-name>
-- Use lowercase letters and hyphens only
-- Keep the description part under 25 characters
-- Be descriptive but concise
-
-Examples:
-- feature/user-authentication
-- bugfix/header-styling-fix
-- hotfix/security-patch
-
-Return ONLY the complete branch name with prefix, nothing else.`;
+        const branchPrompt = this.getBranchPrompt(request.prompt);
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {
@@ -167,11 +166,11 @@ Return ONLY the complete branch name with prefix, nothing else.`;
         
         branchName = branchName.replace(/[^a-z0-9-\/]/g, '-');
         
-        const validPrefixes = ['feature/', 'bugfix/', 'hotfix/'];
+        const validPrefixes = ['feat/', 'fix/', 'chore/', 'docs/', 'style/', 'refactor/', 'test/', 'perf/'];
         const hasValidPrefix = validPrefixes.some(prefix => branchName.startsWith(prefix));
         
         if (!hasValidPrefix) {
-            branchName = `feature/${branchName}`;
+            branchName = `feat/${branchName}`;
         }
         
         branchName = branchName.substring(0, 50);
@@ -230,31 +229,33 @@ Return ONLY the complete branch name with prefix, nothing else.`;
         let enhancedPrompt = originalPrompt + '\n\n--- UPLOADED FILES ---\n';
         
         for (const file of files) {
+            let fileInfo: string;
+            
             try {
                 if (this.isBinaryFile(file.buffer)) {
                     console.log(`📁 Skipping binary file: ${file.originalname}`);
-                    enhancedPrompt += `\n**File: ${file.originalname}** (binary file - content not included)\n`;
-                    continue;
+                    fileInfo = `\n**File: ${file.originalname}** (binary file - content not included)\n`;
+                } else {
+                    const fileContent = this.validateAndConvertToUTF8(file.buffer);
+                    if (fileContent === null) {
+                        console.warn(`⚠️  Invalid UTF-8 content in file ${file.originalname}`);
+                        fileInfo = `\n**File: ${file.originalname}** (invalid UTF-8 encoding - content not included)\n`;
+                    } else {
+                        const maxFileSize = 5000000;
+                        const truncatedContent = fileContent.length > maxFileSize 
+                            ? fileContent.substring(0, maxFileSize) + '\n... (content truncated due to size)'
+                            : fileContent;
+
+                        fileInfo = `\n**File: ${file.originalname}**\n\`\`\`\n${truncatedContent}\n\`\`\`\n`;
+                        console.log(`📄 Added file content: ${file.originalname} (${file.size} bytes)`);
+                    }
                 }
-
-                const fileContent = this.validateAndConvertToUTF8(file.buffer);
-                if (fileContent === null) {
-                    console.warn(`⚠️  Invalid UTF-8 content in file ${file.originalname}`);
-                    enhancedPrompt += `\n**File: ${file.originalname}** (invalid UTF-8 encoding - content not included)\n`;
-                    continue;
-                }
-
-                const maxFileSize = 5000000;
-                const truncatedContent = fileContent.length > maxFileSize 
-                    ? fileContent.substring(0, maxFileSize) + '\n... (content truncated due to size)'
-                    : fileContent;
-
-                enhancedPrompt += `\n**File: ${file.originalname}**\n\`\`\`\n${truncatedContent}\n\`\`\`\n`;
-                console.log(`📄 Added file content: ${file.originalname} (${file.size} bytes)`);
             } catch (error) {
                 console.warn(`⚠️  Could not read file ${file.originalname}:`, error);
-                enhancedPrompt += `\n**File: ${file.originalname}** (could not read content)\n`;
+                fileInfo = `\n**File: ${file.originalname}** (could not read content)\n`;
             }
+            
+            enhancedPrompt += fileInfo;
         }
         
         enhancedPrompt += '\n--- END OF UPLOADED FILES ---\n\nPlease consider the above files when implementing the requested changes.';
@@ -336,20 +337,7 @@ Return ONLY the complete branch name with prefix, nothing else.`;
             .map(change => `- ${change.path} (${change.status})`)
             .join('\n');
 
-        const prDescriptionPrompt = `Generate a professional and informative pull request description based on the following information:
-
-**Original Request:** ${originalPrompt}
-
-**Files Changed (${changeSummary.totalFiles} files):**
-${changesText}
-
-Please create a clear and concise PR description that:
-1. Summarizes what was implemented
-2. Lists the key changes made
-3. Is professional and informative
-4. Uses markdown formatting appropriately
-
-Format the response as a complete PR description without any additional commentary. Do not include the PR title, just the body content.`;
+        const prDescriptionPrompt = this.getPRPrompt(originalPrompt, changeSummary.totalFiles, changesText);
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {

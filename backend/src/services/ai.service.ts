@@ -166,7 +166,7 @@ export class AIService {
                     OPENAI_API_KEY: apiKey,
                 },
                 cwd: workspacePath || process.cwd(),
-                timeout: 300000
+                timeout: 1000000
             });
 
             if (result.exitCode !== 0) {
