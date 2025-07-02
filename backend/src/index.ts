@@ -43,12 +43,12 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   
   const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://www.claudecodx.com', 'https://claudecodx.com', 'https://app.claudecodx.com']
+    ? ['https://www.claudecodex.com', 'https://claudecodex.com', 'https://app.claudecodex.com']
     : ['http://localhost:3000', 'http://localhost'];
   
 
   if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || 'https://www.claudecodx.com');
+    res.header('Access-Control-Allow-Origin', origin || 'https://www.claudecodex.com');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, X-Requested-With, Accept');
     res.header('Access-Control-Allow-Credentials', 'true');
