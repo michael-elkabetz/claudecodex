@@ -41,7 +41,7 @@ export class ProcessService {
             
             await this.cloneBranch(request.githubUrl!, branchName, request.githubToken!, gitService);
             await this.generateCode(request, gitService, branchName);
-            const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!, gitService, request.apiKey!);
+            const pullRequest = await this.createPR(request.githubToken!, githubInfo, branchName, request.prompt!, gitService, request.apiKey!, request.model);
 
             let successMessage = 'Pull request created successfully!';
 
@@ -147,9 +147,9 @@ export class ProcessService {
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {
-            aiResponse = await this.aiService.generateBranchNameWithClaude(request.apiKey, branchPrompt);
+            aiResponse = await this.aiService.generateBranchNameWithAntropic(request.apiKey, branchPrompt, request.model);
         } else {
-            aiResponse = await this.aiService.generateBranchNameWithGPT(request.apiKey, branchPrompt);
+            aiResponse = await this.aiService.generateBranchNameWithOpenAI(request.apiKey, branchPrompt, request.model);
         }
 
         let branchName = aiResponse.content.trim().toLowerCase();
@@ -201,10 +201,10 @@ export class ProcessService {
 
             if (aiProvider === 'anthropic') {
                 console.log('🤖 Generating code with Claude Code...');
-                await this.aiService.generateCodeWithClaudeCodeCLI(request.apiKey, enhancedPrompt, workspacePath);
+                await this.aiService.generateCodeWithClaudeCodeCLI(request.apiKey, enhancedPrompt, workspacePath, request.model);
             } else {
                 console.log('🤖 Generating code with Codex...');
-                await this.aiService.generateCodeWithCodexCLI(request.apiKey, enhancedPrompt, workspacePath);
+                await this.aiService.generateCodeWithCodexCLI(request.apiKey, enhancedPrompt, workspacePath, request.model);
             }
         }
 
@@ -318,41 +318,32 @@ export class ProcessService {
             path: string;
             status: string;
         }>;
-    }): Promise<string> {
-        console.log('🤖 Generating PR description with AI...');
-
+    }, model?: string): Promise<string> {
+        console.log('📝 Generating pull request description...');
         const aiProvider = this.aiService.detectProvider(apiKey);
-        
-        const changesText = changeSummary.changes
-            .map(change => `- ${change.path} (${change.status})`)
-            .join('\n');
-
-        const prDescriptionPrompt = this.getPRPrompt(originalPrompt, changeSummary.totalFiles, changesText);
+        const changesText = changeSummary.changes.map(c => `${c.status}: ${c.path}`).join('\n');
+        const prPrompt = this.getPRPrompt(originalPrompt, changeSummary.totalFiles, changesText);
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {
-            aiResponse = await this.aiService.generateBranchNameWithClaude(apiKey, prDescriptionPrompt);
+            aiResponse = await this.aiService.generatePRDescriptionWithClaude(apiKey, prPrompt, model);
         } else {
-            aiResponse = await this.aiService.generateBranchNameWithGPT(apiKey, prDescriptionPrompt);
+            aiResponse = await this.aiService.generatePRDescriptionWithGPT(apiKey, prPrompt, model);
         }
-
-        const prDescription = aiResponse.content.trim();
-        console.log('📄 Generated PR description');
-        
-        return prDescription;
+        return aiResponse.content;
     }
 
     async createPR(githubToken: string, githubInfo: {
         owner: string;
         repo: string
-    }, branchName: string, prompt: string, gitService: GitService, apiKey: string): Promise<any> {
+    }, branchName: string, prompt: string, gitService: GitService, apiKey: string, model?: string): Promise<any> {
         console.log('🔄 Creating Pull Request...');
 
         const prTitle = `AI-Generated Changes: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`;
         
         const changeSummary = await gitService.getChangeSummary();
         
-        const prBody = await this.generatePRDescription(apiKey, prompt, changeSummary);
+        const prBody = await this.generatePRDescription(apiKey, prompt, changeSummary, model);
 
         try {
             const pullRequest = await this.githubService.createPullRequest(

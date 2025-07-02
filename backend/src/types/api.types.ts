@@ -19,6 +19,7 @@ export interface ExecuteRequest {
   githubToken?: string;
   files?: Express.Multer.File[];
   branch?: string;
+  model?: string;
 }
 
 export interface ExecuteResponse {

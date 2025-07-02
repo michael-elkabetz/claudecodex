@@ -3,8 +3,21 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {Badge} from "@/components/ui/badge";
-import {useEffect, useState, useRef, KeyboardEvent} from "react";
-import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown} from "lucide-react";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {KeyboardEvent, useEffect, useRef, useState} from "react";
+import {
+    ArrowUp,
+    CheckCircle,
+    ChevronDown,
+    Cpu,
+    GitBranch,
+    Github,
+    GitPullRequest,
+    Key,
+    Loader2,
+    Paperclip,
+    X
+} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
 import {GITHUB_CONFIG} from "@/config/github";
 import {DEV_API_URL, GITHUB_API_URL} from "@/config/api";
@@ -18,7 +31,7 @@ const PromptForm = () => {
     const [hasError, setHasError] = useState(false);
     const [prUrl, setPrUrl] = useState("");
     const [files, setFiles] = useState<File[]>([]);
-    const [branches, setBranches] = useState<Array<{name: string; protected: boolean; sha: string}>>([]);
+    const [branches, setBranches] = useState<Array<{ name: string; protected: boolean; sha: string }>>([]);
     const [selectedBranch, setSelectedBranch] = useState<string>("");
     const [isFetchingBranches, setIsFetchingBranches] = useState(false);
     const [showBranchDropdown, setShowBranchDropdown] = useState(false);
@@ -33,12 +46,52 @@ const PromptForm = () => {
     const [githubToken, setGithubToken] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(false);
+    const [availableModels, setAvailableModels] = useState<{ openai: string[], anthropic: string[] }>({
+        openai: [],
+        anthropic: []
+    });
+    const [selectedModel, setSelectedModel] = useState<string>("");
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
     const {toast} = useToast();
     const formRef = useRef<HTMLFormElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const branchDropdownRef = useRef<HTMLDivElement>(null);
 
-    // Check for GitHub OAuth callback
+    const modelMapping: { [key: string]: string } = {
+        'codex-1': 'Codex 1',
+        'codex-mini-latest': 'Codex Mini',
+        'claude-sonnet-4-20250514': 'Claude 4 Sonnet',
+        'claude-opus-4-20250514': 'Claude 4 Opus',
+        'claude-3.7-sonnet-20250219': 'Claude 3.7 Sonnet',
+    };
+
+    const getAvailableModelsForProvider = () => {
+        if (apiKey.startsWith('sk-ant-')) {
+            return availableModels.anthropic;
+        } else if (apiKey.startsWith('sk-') && !apiKey.includes('ant')) {
+            return availableModels.openai;
+        }
+        return [];
+    };
+
+    const fetchAvailableModels = async () => {
+        try {
+            setIsLoadingModels(true);
+            const response = await fetch(`${DEV_API_URL}/models`);
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                setAvailableModels(result.data);
+            } else {
+                console.error('Failed to fetch models:', result.message);
+            }
+        } catch (error) {
+            console.error('Error fetching models:', error);
+        } finally {
+            setIsLoadingModels(false);
+        }
+    };
+
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
@@ -46,20 +99,18 @@ const PromptForm = () => {
         const storedState = sessionStorage.getItem('github_oauth_state');
 
         if (code && state && state === storedState) {
-            // Clear the URL parameters
             window.history.replaceState({}, document.title, window.location.pathname);
             sessionStorage.removeItem('github_oauth_state');
-
-            // Exchange code for token
             exchangeCodeForToken(code);
         }
 
-        // Check for existing token
         const savedToken = localStorage.getItem('github_token');
         if (savedToken) {
             setGithubToken(savedToken);
             setIsAuthorized(true);
         }
+
+        fetchAvailableModels();
     }, []);
 
     const generateRandomString = (length: number) => {
@@ -74,11 +125,9 @@ const PromptForm = () => {
     const handleGitHubAuth = () => {
         setIsAuthLoading(true);
 
-        // Generate state for CSRF protection
         const state = generateRandomString(32);
         sessionStorage.setItem('github_oauth_state', state);
 
-        // Redirect to GitHub OAuth
         const params = new URLSearchParams({
             client_id: GITHUB_CONFIG.CLIENT_ID,
             redirect_uri: GITHUB_CONFIG.REDIRECT_URI,
@@ -168,7 +217,6 @@ const PromptForm = () => {
             return;
         }
 
-        // Validate GitHub URL format
         const githubUrlPattern = /^https:\/\/github\.com\/[\w-]+\/[\w-]+\/?$/;
         if (!githubUrlPattern.test(githubUrl)) {
             toast({
@@ -188,12 +236,15 @@ const PromptForm = () => {
             formData.append('apiKey', apiKey);
             formData.append('githubUrl', githubUrl);
             formData.append('githubToken', githubToken);
-            
-            // Add selected branch only if it's not main or master
+
+            if (selectedModel) {
+                formData.append('model', selectedModel);
+            }
+
             if (selectedBranch && !['main', 'master'].includes(selectedBranch.toLowerCase())) {
                 formData.append('branch', selectedBranch);
             }
-            
+
             files.forEach((file) => {
                 formData.append('files', file);
             });
@@ -257,6 +308,7 @@ const PromptForm = () => {
         setFiles([]);
         setBranches([]);
         setSelectedBranch("");
+        setSelectedModel("");
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -273,7 +325,7 @@ const PromptForm = () => {
             }
             return;
         }
-        
+
         setFiles(prev => [...prev, ...selectedFiles]);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -309,11 +361,19 @@ const PromptForm = () => {
             if (response.ok && result.success) {
                 const fetchedBranches = result.data.branches || [];
                 setBranches(fetchedBranches);
-                
+
                 // Set default selected branch (prioritize 'main', then 'master', then first branch)
                 if (fetchedBranches.length > 0) {
-                    const mainBranch = fetchedBranches.find((b: {name: string; protected: boolean; sha: string}) => b.name === 'main');
-                    const masterBranch = fetchedBranches.find((b: {name: string; protected: boolean; sha: string}) => b.name === 'master');
+                    const mainBranch = fetchedBranches.find((b: {
+                        name: string;
+                        protected: boolean;
+                        sha: string
+                    }) => b.name === 'main');
+                    const masterBranch = fetchedBranches.find((b: {
+                        name: string;
+                        protected: boolean;
+                        sha: string
+                    }) => b.name === 'master');
                     const defaultBranch = mainBranch || masterBranch || fetchedBranches[0];
                     setSelectedBranch(defaultBranch.name);
                 }
@@ -334,7 +394,7 @@ const PromptForm = () => {
     // Fetch branches when GitHub URL changes and user is authorized
     useEffect(() => {
         const githubUrlPattern = /^https:\/\/github\.com\/[\w-]+\/[\w-]+\/?$/;
-        
+
         if (githubUrl && githubUrlPattern.test(githubUrl) && isAuthorized && githubToken) {
             const timeoutId = setTimeout(() => {
                 fetchBranches(githubUrl, githubToken);
@@ -347,7 +407,6 @@ const PromptForm = () => {
         }
     }, [githubUrl, isAuthorized, githubToken]);
 
-    // Handle clicks outside dropdown to close it
     useEffect(() => {
         const handleClickOutside = (event: Event) => {
             if (branchDropdownRef.current && !branchDropdownRef.current.contains(event.target as Node)) {
@@ -364,6 +423,23 @@ const PromptForm = () => {
         };
     }, [showBranchDropdown]);
 
+    const getModelDisplayName = (modelId: string): string => {
+        return modelMapping[modelId] || modelId;
+    };
+
+    const defaultModelName = () => {
+        if (apiKey.startsWith('sk-ant-')) {
+            return getModelDisplayName('claude-sonnet-4-20250514');
+        } else if (apiKey.startsWith('sk-') && !apiKey.includes('ant')) {
+            return getModelDisplayName('codex-1');
+        }
+        return "Select Model";
+    };
+
+    const handleModelChange = (value: string) => {
+        setSelectedModel(value);
+    };
+
     return (
         <section className="flex justify-center px-4 pt-2 pb-4 relative">
             <div className="w-full max-w-6xl">
@@ -379,7 +455,8 @@ const PromptForm = () => {
                         {/* Prompt Section */}
                         <div className="space-y-0 group">
                             <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
-                                <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">Build Anything</Label>
+                                <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">Build
+                                    Anything</Label>
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg">
                                 <form onSubmit={handleSubmit} ref={formRef}>
@@ -390,7 +467,7 @@ const PromptForm = () => {
                                                 id="prompt"
                                                 placeholder="Ask ClaudeCodex to build..."
                                                 className="min-h-[150px] resize-none pt-0 pb-1 px-1 pl-6 text-base focus:outline-none border-0 focus:ring-0 focus:border-0 focus:shadow-none outline-none"
-                                                style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                                style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                                 value={prompt}
                                                 onChange={(e) => {
                                                     setPrompt(e.target.value);
@@ -399,13 +476,16 @@ const PromptForm = () => {
                                                 onKeyDown={handleKeyDown}
                                                 disabled={isLoading}
                                             />
-                                            <div className="absolute bottom-1 left-1 right-1 flex justify-between items-center gap-2">
-                                                {/* Left side: Branch and File attachments */}
+                                            <div
+                                                className="absolute bottom-1 left-1 right-1 flex justify-between items-center gap-2">
+                                                {/* Left side: Branch and Model selection */}
                                                 <div className="flex items-center gap-1">
                                                     {/* Branch Selection */}
                                                     {isFetchingBranches && (
-                                                        <div className="flex items-center bg-white text-gray-800 text-sm px-3 h-8 rounded-md border border-input shadow-sm">
-                                                            <Loader2 className="h-3 w-3 mr-1.5 text-gray-500 animate-spin"/>
+                                                        <div
+                                                            className="flex items-center bg-white text-gray-800 text-sm px-3 h-8 rounded-md border border-input shadow-sm">
+                                                            <Loader2
+                                                                className="h-3 w-3 mr-1.5 text-gray-500 animate-spin"/>
                                                             <span className="truncate max-w-20">Loading...</span>
                                                         </div>
                                                     )}
@@ -418,15 +498,18 @@ const PromptForm = () => {
                                                                 className="flex items-center bg-white text-gray-800 text-sm px-3 h-8 rounded-md border border-input shadow-sm hover:bg-gray-50"
                                                             >
                                                                 <GitBranch className="h-3 w-3 mr-1.5 text-gray-500"/>
-                                                                <span className="truncate max-w-40">{selectedBranch}</span>
+                                                                <span
+                                                                    className="truncate max-w-40">{selectedBranch}</span>
                                                                 {branches.find(b => b.name === selectedBranch)?.protected && (
-                                                                    <span className="ml-1 text-xs text-gray-500" title="Protected branch">🔒</span>
+                                                                    <span className="ml-1 text-xs text-gray-500"
+                                                                          title="Protected branch">🔒</span>
                                                                 )}
                                                                 <ChevronDown className="h-3 w-3 ml-1.5 text-gray-500"/>
                                                             </button>
-                                                            
+
                                                             {showBranchDropdown && (
-                                                                <div className="absolute z-20 left-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto min-w-48">
+                                                                <div
+                                                                    className="absolute z-20 left-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto min-w-48">
                                                                     {branches.map((branch, index) => (
                                                                         <button
                                                                             key={index}
@@ -439,18 +522,55 @@ const PromptForm = () => {
                                                                                 selectedBranch === branch.name ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
                                                                             }`}
                                                                         >
-                                                                            <GitBranch className="h-3 w-3 mr-2 text-gray-500"/>
-                                                                            <span className="flex-1">{branch.name}</span>
+                                                                            <GitBranch
+                                                                                className="h-3 w-3 mr-2 text-gray-500"/>
+                                                                            <span
+                                                                                className="flex-1">{branch.name}</span>
                                                                             {branch.protected && (
-                                                                                <span className="ml-2 text-xs text-gray-500" title="Protected branch">🔒</span>
+                                                                                <span
+                                                                                    className="ml-2 text-xs text-gray-500"
+                                                                                    title="Protected branch">🔒</span>
                                                                             )}
                                                                             {selectedBranch === branch.name && (
-                                                                                <CheckCircle className="h-3 w-3 ml-2 text-blue-600"/>
+                                                                                <CheckCircle
+                                                                                    className="h-3 w-3 ml-2 text-blue-600"/>
                                                                             )}
                                                                         </button>
                                                                     ))}
                                                                 </div>
                                                             )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Model Selection - Inline */}
+                                                    {apiKey && getAvailableModelsForProvider().length > 0 && (
+                                                        <div
+                                                            className="bg-white rounded-md border border-input shadow-sm h-8">
+                                                            <Select
+                                                                value={selectedModel || 'default'}
+                                                                onValueChange={handleModelChange}
+                                                                disabled={isLoadingModels || !apiKey}
+                                                            >
+                                                                <SelectTrigger className="h-8 px-3 text-sm border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none bg-transparent">
+                                                                    <div className="flex items-center">
+                                                                        <Cpu className="h-3 w-3 mr-1.5 text-gray-500"/>
+                                                                        <SelectValue
+                                                                            placeholder={defaultModelName()}
+                                                                            className="truncate max-w-20"
+                                                                        />
+                                                                    </div>
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="default">
+                                                                        {defaultModelName()}
+                                                                    </SelectItem>
+                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-1')).map(model => (
+                                                                        <SelectItem key={model} value={model}>
+                                                                            {getModelDisplayName(model)}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
                                                         </div>
                                                     )}
                                                 </div>
@@ -459,7 +579,8 @@ const PromptForm = () => {
                                                 <div className="flex items-center gap-2">
                                                     {/* Files */}
                                                     {files.map((file, index) => (
-                                                        <div key={index} className="flex items-center bg-white text-gray-800 text-sm px-3 h-8 rounded-md border border-input shadow-sm">
+                                                        <div key={index}
+                                                             className="flex items-center bg-white text-gray-800 text-sm px-3 h-8 rounded-md border border-input shadow-sm">
                                                             <Paperclip className="h-3 w-3 mr-1.5 text-gray-500"/>
                                                             <span className="truncate max-w-20">{file.name}</span>
                                                             <Button
@@ -475,9 +596,9 @@ const PromptForm = () => {
                                                             </Button>
                                                         </div>
                                                     ))}
-                                                    <Button 
-                                                        type="button" 
-                                                        size="icon" 
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
                                                         variant="outline"
                                                         className="h-8 w-8"
                                                         onClick={handleFileUploadClick}
@@ -513,7 +634,8 @@ const PromptForm = () => {
                         <div className="relative">
                             <div className="space-y-0 group">
                                 <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
-                                    <Label htmlFor="github-url" className="text-sm font-medium text-gray-700">GitHub Repository URL</Label>
+                                    <Label htmlFor="github-url" className="text-sm font-medium text-gray-700">GitHub
+                                        Repository URL</Label>
                                 </div>
                                 <div className="bg-white border rounded-b-md shadow-lg p-4">
                                     <div className="relative">
@@ -529,12 +651,12 @@ const PromptForm = () => {
                                             }}
                                             disabled={isLoading}
                                             className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                         />
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Floating GitHub Authorization Icon */}
                             <div className="absolute -top-3 right-4">
                                 {isAuthorized ? (
@@ -576,8 +698,10 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
-                                <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                            <div
+                                className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
+                                <Label htmlFor="api-key" className="text-sm font-medium text-gray-700">Code Agent
+                                    Key</Label>
                                 {apiKey.startsWith('sk-ant-') ? (
                                     <Badge variant="default">ClaudeCode</Badge>
                                 ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
@@ -598,17 +722,19 @@ const PromptForm = () => {
                                                 if (hasError) setHasError(false);
                                             }}
                                             className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                             disabled={isLoading}
                                         />
                                     </div>
                                 </form>
                             </div>
                         </div>
+
+
                     </div>
 
                     {/* Desktop Process Animation */}
-                    <ProcessAnimation 
+                    <ProcessAnimation
                         isVisible={isLoading || !!prUrl || hasError}
                         isComplete={!!prUrl && !isLoading && !hasError}
                         hasError={hasError}
@@ -625,7 +751,8 @@ const PromptForm = () => {
                         {/* Prompt Section */}
                         <div className="space-y-0 group">
                             <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
-                                <Label htmlFor="prompt-mobile" className="text-sm font-medium text-gray-700">Build Anything</Label>
+                                <Label htmlFor="prompt-mobile" className="text-sm font-medium text-gray-700">Build
+                                    Anything</Label>
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg">
                                 <form onSubmit={handleSubmit}>
@@ -636,7 +763,7 @@ const PromptForm = () => {
                                                 id="prompt-mobile"
                                                 placeholder="Ask ClaudeCodex to build..."
                                                 className="min-h-[120px] resize-none pt-0 pb-1 px-1 pl-6 text-base focus:outline-none border-0 focus:ring-0 focus:border-0 focus:shadow-none outline-none"
-                                                style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                                style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                                 value={prompt}
                                                 onChange={(e) => {
                                                     setPrompt(e.target.value);
@@ -645,13 +772,17 @@ const PromptForm = () => {
                                                 onKeyDown={handleKeyDown}
                                                 disabled={isLoading}
                                             />
-                                            <div className="absolute bottom-1 left-1 right-1 flex justify-between items-center gap-2">
-                                                {/* Left side: Branch */}
+                                            <div
+                                                className="absolute bottom-1 left-1 right-1 flex justify-between items-center gap-2">
+                                                {/* Left side: Branch and Model */}
                                                 <div className="flex items-center gap-1">
                                                     {isFetchingBranches && (
-                                                        <div className="flex items-center bg-white text-gray-800 text-sm px-2 h-8 rounded-md border border-input shadow-sm">
-                                                            <Loader2 className="h-3 w-3 mr-1 text-gray-500 animate-spin"/>
-                                                            <span className="truncate max-w-16 text-xs">Loading...</span>
+                                                        <div
+                                                            className="flex items-center bg-white text-gray-800 text-sm px-2 h-8 rounded-md border border-input shadow-sm">
+                                                            <Loader2
+                                                                className="h-3 w-3 mr-1 text-gray-500 animate-spin"/>
+                                                            <span
+                                                                className="truncate max-w-16 text-xs">Loading...</span>
                                                         </div>
                                                     )}
                                                     {!isFetchingBranches && selectedBranch && (
@@ -663,15 +794,18 @@ const PromptForm = () => {
                                                                 className="flex items-center bg-white text-gray-800 text-xs px-2 h-8 rounded-md border border-input shadow-sm hover:bg-gray-50"
                                                             >
                                                                 <GitBranch className="h-3 w-3 mr-1 text-gray-500"/>
-                                                                <span className="truncate max-w-20">{selectedBranch}</span>
+                                                                <span
+                                                                    className="truncate max-w-20">{selectedBranch}</span>
                                                                 {branches.find(b => b.name === selectedBranch)?.protected && (
-                                                                    <span className="ml-1 text-xs text-gray-500">🔒</span>
+                                                                    <span
+                                                                        className="ml-1 text-xs text-gray-500">🔒</span>
                                                                 )}
                                                                 <ChevronDown className="h-3 w-3 ml-1 text-gray-500"/>
                                                             </button>
-                                                            
+
                                                             {showBranchDropdown && (
-                                                                <div className="absolute z-20 left-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto min-w-48">
+                                                                <div
+                                                                    className="absolute z-20 left-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto min-w-48">
                                                                     {branches.map((branch, index) => (
                                                                         <button
                                                                             key={index}
@@ -684,18 +818,55 @@ const PromptForm = () => {
                                                                                 selectedBranch === branch.name ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
                                                                             }`}
                                                                         >
-                                                                            <GitBranch className="h-3 w-3 mr-2 text-gray-500"/>
-                                                                            <span className="flex-1">{branch.name}</span>
+                                                                            <GitBranch
+                                                                                className="h-3 w-3 mr-2 text-gray-500"/>
+                                                                            <span
+                                                                                className="flex-1">{branch.name}</span>
                                                                             {branch.protected && (
-                                                                                <span className="ml-2 text-xs text-gray-500">🔒</span>
+                                                                                <span
+                                                                                    className="ml-2 text-xs text-gray-500">🔒</span>
                                                                             )}
                                                                             {selectedBranch === branch.name && (
-                                                                                <CheckCircle className="h-3 w-3 ml-2 text-blue-600"/>
+                                                                                <CheckCircle
+                                                                                    className="h-3 w-3 ml-2 text-blue-600"/>
                                                                             )}
                                                                         </button>
                                                                     ))}
                                                                 </div>
                                                             )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Model Selection - Mobile Inline */}
+                                                    {apiKey && getAvailableModelsForProvider().length > 0 && (
+                                                        <div
+                                                            className="bg-white rounded-md border border-input shadow-sm h-8">
+                                                            <Select
+                                                                value={selectedModel || 'default'}
+                                                                onValueChange={handleModelChange}
+                                                                disabled={isLoadingModels || !apiKey}
+                                                            >
+                                                                <SelectTrigger
+                                                                    className="h-10 px-3 text-sm border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none bg-transparent">
+                                                                    <div className="flex items-center">
+                                                                        <Cpu className="h-4 w-4 mr-2 text-gray-500"/>
+                                                                        <SelectValue
+                                                                            placeholder={defaultModelName()}
+                                                                            className="truncate max-w-full"
+                                                                        />
+                                                                    </div>
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="default">
+                                                                        {defaultModelName()}
+                                                                    </SelectItem>
+                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-1')).map(model => (
+                                                                        <SelectItem key={model} value={model}>
+                                                                            {getModelDisplayName(model)}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
                                                         </div>
                                                     )}
                                                 </div>
@@ -704,14 +875,15 @@ const PromptForm = () => {
                                                 <div className="flex items-center gap-1">
                                                     {/* Files - show only count on mobile if any */}
                                                     {files.length > 0 && (
-                                                        <div className="flex items-center bg-white text-gray-800 text-xs px-2 h-8 rounded-md border border-input shadow-sm">
+                                                        <div
+                                                            className="flex items-center bg-white text-gray-800 text-xs px-2 h-8 rounded-md border border-input shadow-sm">
                                                             <Paperclip className="h-3 w-3 mr-1 text-gray-500"/>
                                                             <span>{files.length}</span>
                                                         </div>
                                                     )}
-                                                    <Button 
-                                                        type="button" 
-                                                        size="icon" 
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
                                                         variant="outline"
                                                         className="h-8 w-8"
                                                         onClick={handleFileUploadClick}
@@ -744,7 +916,8 @@ const PromptForm = () => {
                         <div className="relative">
                             <div className="space-y-0 group">
                                 <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300">
-                                    <Label htmlFor="github-url-mobile" className="text-sm font-medium text-gray-700">GitHub Repository URL</Label>
+                                    <Label htmlFor="github-url-mobile" className="text-sm font-medium text-gray-700">GitHub
+                                        Repository URL</Label>
                                 </div>
                                 <div className="bg-white border rounded-b-md shadow-lg p-4">
                                     <div className="relative">
@@ -760,12 +933,12 @@ const PromptForm = () => {
                                             }}
                                             disabled={isLoading}
                                             className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                         />
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Floating GitHub Authorization Icon */}
                             <div className="absolute -top-3 right-4">
                                 {isAuthorized ? (
@@ -808,8 +981,10 @@ const PromptForm = () => {
 
                         {/* API Key Section */}
                         <div className="space-y-0 group">
-                            <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
-                                <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent Key</Label>
+                            <div
+                                className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
+                                <Label htmlFor="api-key-mobile" className="text-sm font-medium text-gray-700">Code Agent
+                                    Key</Label>
                                 {apiKey.startsWith('sk-ant-') ? (
                                     <Badge variant="default">ClaudeCode</Badge>
                                 ) : apiKey.startsWith('sk-') && !apiKey.includes('ant') ? (
@@ -830,19 +1005,21 @@ const PromptForm = () => {
                                                 if (hasError) setHasError(false);
                                             }}
                                             className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            style={{outline: 'none', border: 'none', boxShadow: 'none'}}
                                             disabled={isLoading}
                                         />
                                     </div>
                                 </form>
                             </div>
                         </div>
+
+
                     </div>
 
                     {/* Mobile Process Animation - shows below the form */}
                     {(isLoading || prUrl || hasError) && (
                         <div className="w-full max-w-md mx-auto">
-                            <ProcessAnimation 
+                            <ProcessAnimation
                                 isVisible={true}
                                 isComplete={!!prUrl && !isLoading && !hasError}
                                 hasError={hasError}

@@ -107,9 +107,9 @@ export class GitHubController {
 
         let aiResponse;
         if (provider === 'anthropic') {
-          aiResponse = await this.aiService.generateBranchNameWithClaude(apiKey, branchPrompt);
+          aiResponse = await this.aiService.generateBranchNameWithAntropic(apiKey, branchPrompt);
         } else if (provider === 'openai') {
-          aiResponse = await this.aiService.generateBranchNameWithGPT(apiKey, branchPrompt);
+          aiResponse = await this.aiService.generateBranchNameWithOpenAI(apiKey, branchPrompt);
         } else {
           throw new Error('Invalid API key format');
         }

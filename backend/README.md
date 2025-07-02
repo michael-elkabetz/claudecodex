@@ -113,12 +113,26 @@ Content-Type: multipart/form-data
 
 {
   "prompt": "Add a new feature to calculate user statistics",
-  "apiKey": "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx",
+  "apiKey": "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx", // Anthropic or OpenAI key
+  "model": "claude-4-sonnet-20250522", // optional - defaults per provider
   "githubUrl": "https://github.com/username/repository", 
   "githubToken": "ghp_xxxxxxxxxxxxxxxxxxxx", // optional - can use GITHUB_TOKEN env var
   "files": [/* optional file uploads */]
 }
 ```
+
+**Supported AI Providers & Models:**
+
+🤖 **Anthropic Claude (prefix: sk-ant-)**
+- `claude-sonnet-4-20250514` (default)
+- `claude-opus-4-20250514`
+- `claude-3.7-sonnet-20250219`
+
+🧠 **OpenAI Codex (prefix: sk-)**
+- `codex-1` (default)
+- `codex-mini-latest`
+
+> **Auto-Detection**: The system automatically detects the AI provider based on your API key prefix and uses the appropriate CLI tool and default model.
 
 **What This Endpoint Does:**
 1. 🧠 Generates an AI-powered branch name from your prompt

@@ -40,8 +40,12 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 ```
 
 **Optional Environment Variables:**
-- `API_KEY`: Your Anthropic Claude or OpenAI API key
+- `API_KEY`: Your Anthropic Claude or OpenAI API key (auto-detects provider)
 - `GITHUB_TOKEN`: GitHub access token (alternative to providing it in requests)
+
+**🤖 Supported AI Models:**
+- **Anthropic**: claude-sonnet-4-20250514 (default), claude-opus-4-20250514, claude-3.7-sonnet-20250219
+- **OpenAI**: codex-1 (default), codex-mini-latest
 
 ### Production
 

@@ -91,8 +91,20 @@ const options: swaggerJsdoc.Options = {
             },
             apiKey: {
               type: 'string',
-              description: 'Anthropic (sk-ant-) or OpenAI (sk-) API key',
+              description: 'Anthropic (sk-ant-) or OpenAI (sk-) API key. System automatically detects provider based on key prefix.',
               example: 'sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx'
+            },
+            model: {
+              type: 'string',
+              description: 'AI model to use (optional). Defaults: claude-sonnet-4-20250514 for Anthropic, codex-1 for OpenAI',
+              example: 'claude-sonnet-4-20250514',
+              enum: [
+                'claude-sonnet-4-20250514',
+                'claude-opus-4-20250514',
+                'claude-3.7-sonnet-20250219',
+                'codex-1',
+                'codex-mini-latest'
+              ]
             },
             githubUrl: {
               type: 'string',

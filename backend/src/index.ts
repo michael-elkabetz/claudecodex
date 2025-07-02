@@ -77,9 +77,13 @@ app.use(hpp({
 }));
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(morgan('combined'));
+  app.use(morgan('combined', {
+    skip: (req) => req.path.startsWith('/api-docs') || req.path === '/favicon.ico'
+  }));
 } else {
-  app.use(morgan('dev'));
+  app.use(morgan('dev', {
+    skip: (req) => req.path.startsWith('/api-docs') || req.path === '/favicon.ico'
+  }));
 }
 
 const generalLimiter = rateLimit({
@@ -176,20 +180,7 @@ const validateGitHubUrl = body('githubUrl')
   .contains('github.com')
   .withMessage('URL must be a GitHub repository');
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const timestamp = new Date().toISOString();
-  const userAgent = req.get('User-Agent') || 'Unknown';
-  const ip = req.ip || req.connection.remoteAddress;
-  const origin = req.get('Origin');
-
-  console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${ip} - Origin: ${origin || 'None'} - UA: ${userAgent.substring(0, 100)}`);
-
-  if (req.path.includes('/auth') || req.path.includes('/process')) {
-    console.log(`🔐 Security-sensitive endpoint accessed: ${req.method} ${req.path}`);
-  }
-
-  next();
-});
+// Custom logging middleware removed - using Morgan instead
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   customCss: `
