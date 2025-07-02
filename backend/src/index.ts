@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -41,13 +41,43 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://www.claudecodex.com']
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.NODE_ENV === 'production'
+      ? ['https://www.claudecodex.com', 'https://claudecodex.com']
+      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.log(`CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }));
+
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? ['https://www.claudecodex.com', 'https://claudecodex.com']
+    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+  
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  }
+  
+  res.status(200).send();
+});
 
 app.use(compression({
   level: 6,
@@ -180,11 +210,22 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const timestamp = new Date().toISOString();
   const userAgent = req.get('User-Agent') || 'Unknown';
   const ip = req.ip || req.connection.remoteAddress;
+  const origin = req.get('Origin');
 
-  console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${ip} - UA: ${userAgent.substring(0, 100)}`);
+  console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${ip} - Origin: ${origin || 'None'} - UA: ${userAgent.substring(0, 100)}`);
 
   if (req.path.includes('/auth') || req.path.includes('/process')) {
     console.log(`🔐 Security-sensitive endpoint accessed: ${req.method} ${req.path}`);
+  }
+
+  // Debug CORS headers in response
+  if (req.method === 'OPTIONS' || origin) {
+    console.log(`🌐 CORS Debug - Method: ${req.method}, Origin: ${origin}, Path: ${req.path}`);
+    console.log(`🌐 CORS Debug - Response Headers: ${JSON.stringify({
+      'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin'),
+      'Access-Control-Allow-Methods': res.getHeader('Access-Control-Allow-Methods'),
+      'Access-Control-Allow-Headers': res.getHeader('Access-Control-Allow-Headers')
+    })}`);
   }
 
   next();
