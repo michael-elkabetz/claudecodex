@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
@@ -39,32 +40,34 @@ app.use(helmet({
   }
 }));
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://www.claudecodex.com', 'https://claudecodex.com', 'https://app.claudecodex.com']
-    : ['http://localhost:3000', 'http://localhost'];
-  
-
-  if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || 'https://www.claudecodex.com');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, X-Requested-With, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400');
+// CORS configuration
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (error: Error | null, success?: boolean) => void) {
+    const allowedOrigins = process.env.NODE_ENV === 'production'
+      ? ['https://www.claudecodex.com', 'https://claudecodex.com', 'https://app.claudecodex.com']
+      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
     
-    console.log(`✅ CORS allowed for origin: ${origin || 'no-origin'}`);
-  } else {
-    console.log(`❌ CORS blocked for origin: ${origin}`);
-  }
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  next();
-});
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      console.log('✅ CORS allowed for request with no origin');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS allowed for origin: ${origin}`);
+      callback(null, true);
+    } else {
+      console.log(`❌ CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Requested-With', 'Accept'],
+  maxAge: 86400 // 24 hours
+};
+
+app.use(cors(corsOptions));
 
 app.use(compression({
   level: 6,
@@ -203,16 +206,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   if (req.path.includes('/auth') || req.path.includes('/process')) {
     console.log(`🔐 Security-sensitive endpoint accessed: ${req.method} ${req.path}`);
-  }
-
-  // Debug CORS headers in response
-  if (req.method === 'OPTIONS' || origin) {
-    console.log(`🌐 CORS Debug - Method: ${req.method}, Origin: ${origin}, Path: ${req.path}`);
-    console.log(`🌐 CORS Debug - Response Headers: ${JSON.stringify({
-      'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin'),
-      'Access-Control-Allow-Methods': res.getHeader('Access-Control-Allow-Methods'),
-      'Access-Control-Allow-Headers': res.getHeader('Access-Control-Allow-Headers')
-    })}`);
   }
 
   next();
