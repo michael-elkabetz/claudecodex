@@ -1,5 +1,4 @@
 import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
@@ -40,43 +39,31 @@ app.use(helmet({
   }
 }));
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = process.env.NODE_ENV === 'production'
-      ? ['https://www.claudecodex.com', 'https://claudecodex.com']
-      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    console.log(`CORS blocked origin: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Requested-With'],
-  preflightContinue: false,
-  optionsSuccessStatus: 200
-}));
-
-app.options('*', (req, res) => {
+app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://www.claudecodex.com', 'https://claudecodex.com']
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
   
+  const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? ['https://www.claudecodx.com', 'https://claudecodx.com', 'https://app.claudecodx.com']
+    : ['http://localhost:3000', 'http://localhost'];
+  
+
   if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Origin', origin || 'https://www.claudecodx.com');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, X-Requested-With');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, X-Requested-With, Accept');
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    res.header('Access-Control-Max-Age', '86400');
+    
+    console.log(`✅ CORS allowed for origin: ${origin || 'no-origin'}`);
+  } else {
+    console.log(`❌ CORS blocked for origin: ${origin}`);
   }
   
-  res.status(200).send();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
 });
 
 app.use(compression({
