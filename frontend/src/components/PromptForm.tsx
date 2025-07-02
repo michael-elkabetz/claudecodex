@@ -198,7 +198,7 @@ const PromptForm = () => {
                 formData.append('files', file);
             });
 
-            const response = await fetch(`${CORE_API_URL}/process`, {
+            const response = await fetch(`${CORE_API_URL}/developer`, {
                 method: 'POST',
                 body: formData,
             });

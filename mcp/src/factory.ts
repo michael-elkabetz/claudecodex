@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { logger } from "./logger.js";
 import { getPackageInfo, PackageInfo } from "./utils/package-info.js";
-import { defineProcessRequestTool } from "./tools/code.js";
+import { defineDeveloperTool } from "./tools/code.js";
 
 export class Factory {
   private packageInfo: PackageInfo;
@@ -39,6 +39,6 @@ export class Factory {
   }
 
   private discoverTools() {
-    return [defineProcessRequestTool()];
+    return [defineDeveloperTool()];
   }
 }

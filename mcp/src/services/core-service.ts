@@ -7,7 +7,7 @@ export class CoreService {
   async processRequest(request: ProcessRequest): Promise<ProcessResponse> {
     try {
       const response = await axios.post<ProcessResponse>(
-        `${API_URL}/process`,
+        `${API_URL}/developer`,
         request,
       );
       return response.data;

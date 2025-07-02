@@ -17,14 +17,14 @@ const PROCESS_REQUEST_SCHEMA = z.object({
   branch: z.string().optional().describe("The optional branch name to work on"),
 });
 
-export function defineProcessRequestTool(): ToolDefinition<
+export function defineDeveloperTool(): ToolDefinition<
   typeof PROCESS_REQUEST_SCHEMA
 > {
   return {
-    name: "code",
-    title: "Generate Code Tool",
+    name: "developer",
+    title: "Developer Tool",
     description:
-      "Processes a request by the AI model to generate code changes and create a pull request",
+      "Developer endpoint that processes requests to generate code changes and create pull requests",
     schema: PROCESS_REQUEST_SCHEMA,
     isReadOnly: false,
     execute: async (params: z.infer<typeof PROCESS_REQUEST_SCHEMA>) => {

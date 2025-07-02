@@ -59,7 +59,7 @@ export class CoreController {
     }
   };
 
-  process = async (req: Request, res: Response): Promise<void> => {
+  developer = async (req: Request, res: Response): Promise<void> => {
     try {
       const processRequest: ProcessRequest = {
         prompt: req.body.prompt,
@@ -86,7 +86,7 @@ export class CoreController {
         res.status(400).json(result);
       }
     } catch (error) {
-      console.error('Error in process:', error);
+      console.error('Error in developer:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error',

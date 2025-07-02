@@ -135,11 +135,11 @@ router.post('/branches', coreController.getBranches);
 
 /**
  * @swagger
- * /api/core/process:
+ * /api/core/developer:
  *   post:
- *     summary: 🤖 Generate code and create pull request
+ *     summary: 🤖 Developer endpoint - Generate code and create pull request
  *     description: | 
- *       **The main AI-powered endpoint!** 
+ *       **The main AI-powered developer endpoint!** 
  *       
  *       This endpoint:
  *       1. 🧠 Uses AI (Anthropic/OpenAI) to generate a branch name
@@ -156,7 +156,7 @@ router.post('/branches', coreController.getBranches);
  *       **File Support:**
  *       - Supports uploading multiple files (max 10 files, 10MB each)
  *       - Supported file types: txt, md, js, ts, jsx, tsx, py, java, cpp, c, h, css, html, json, xml, yml, yaml, pdf, doc, docx, xls, xlsx
- *     tags: [Core]
+ *     tags: [Developer]
  *     requestBody:
  *       required: true
  *       content:
@@ -224,7 +224,11 @@ router.post('/branches', coreController.getBranches);
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/process', upload.array('files', 10), coreController.process);
+router.post('/developer', upload.array('files', 10), coreController.developer);
+
+// TODO: Future endpoints to be implemented
+// router.post('/planner', upload.array('files', 10), coreController.planner);
+// router.post('/workflow', upload.array('files', 10), coreController.workflow);  
 
 /**
  * @swagger
