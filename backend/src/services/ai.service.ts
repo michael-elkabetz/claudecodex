@@ -26,7 +26,7 @@ export class AIService {
     private readonly VALID_ANTHROPIC_MODELS = [
         'claude-sonnet-4-20250514',
         'claude-opus-4-20250514',
-        'claude-3.7-sonnet-20250219'
+        'claude-3-7-sonnet-20250219'
     ];
 
     private initAnthropic(apiKey: string): void {

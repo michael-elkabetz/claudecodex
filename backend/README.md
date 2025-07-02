@@ -126,7 +126,7 @@ Content-Type: multipart/form-data
 🤖 **Anthropic Claude (prefix: sk-ant-)**
 - `claude-sonnet-4-20250514` (default)
 - `claude-opus-4-20250514`
-- `claude-3.7-sonnet-20250219`
+- `claude-3-7-sonnet-20250219`
 
 🧠 **OpenAI Codex (prefix: sk-)**
 - `codex-mini-latest` (default)

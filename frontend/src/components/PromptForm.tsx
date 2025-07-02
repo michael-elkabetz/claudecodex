@@ -62,7 +62,7 @@ const PromptForm = () => {
         'o4-mini': 'o4 Mini',
         'claude-sonnet-4-20250514': 'Claude 4 Sonnet',
         'claude-opus-4-20250514': 'Claude 4 Opus',
-        'claude-3.7-sonnet-20250219': 'Claude 3.7 Sonnet',
+        'claude-3-7-sonnet-20250219': 'Claude 3.7 Sonnet',
     };
 
     const getAvailableModelsForProvider = () => {
