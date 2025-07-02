@@ -73,7 +73,7 @@ docker run -d -p 3000:3000 \
   -e GITHUB_CLIENT_SECRET=your_github_client_secret \
   -e GITHUB_TOKEN=your_github_token \
   -e API_KEY=your_api_key \
-  claudecodx-backend
+  claudecodex-backend
 ```
 
 ### 🔧 Environment Variables
@@ -103,45 +103,20 @@ API_KEY=sk--xxxxxxxxxxxxxxxxxxxxx
 
 ## 🛣️ API Endpoints
 
-### 🔐 GitHub Authentication
+### 🤖 AI Code Generation & PR Creation (Main Endpoint)
 
-**Exchange OAuth Code for Access Token**
-
-```http
-POST /api/core/github-auth
-Content-Type: application/json
-
-{
-  "code": "gho_xxxxxxxxxxxxxxxxxxxx",
-  "client_id": "Iv1.a629723000000000", 
-  "redirect_uri": "http://localhost:3000/auth/callback"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "GitHub OAuth successful",
-  "data": {
-    "access_token": "ghp_xxxxxxxxxxxxxxxxxxxx"
-  }
-}
-```
-
-### 🤖 AI Code Generation & PR Creation
-
-**Main Processing Endpoint**
+**Complete AI Workflow**
 
 ```http
-POST /api/core/process
-Content-Type: application/json
+POST /api/dev/execute
+Content-Type: multipart/form-data
 
 {
   "prompt": "Add a new feature to calculate user statistics",
   "apiKey": "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx",
   "githubUrl": "https://github.com/username/repository", 
-  "githubToken": "ghp_xxxxxxxxxxxxxxxxxxxx"  // Optional if GITHUB_TOKEN env var is set
+  "githubToken": "ghp_xxxxxxxxxxxxxxxxxxxx", // optional - can use GITHUB_TOKEN env var
+  "files": [/* optional file uploads */]
 }
 ```
 
@@ -170,29 +145,74 @@ Content-Type: application/json
 }
 ```
 
-### 🏥 Health Check
+### 🔐 GitHub Authentication
 
-**Service Health Status**
+**Exchange OAuth Code for Access Token**
 
 ```http
-GET /api/core/health
+POST /api/github/auth
+Content-Type: application/json
+
+{
+  "code": "gho_xxxxxxxxxxxxxxxxxxxx",
+  "client_id": "Iv1.a629723000000000", 
+  "redirect_uri": "http://localhost:3000/auth/callback"
+}
 ```
 
 **Response:**
 ```json
 {
   "success": true,
-  "message": "Core service is healthy",
+  "message": "GitHub OAuth successful",
   "data": {
-    "timestamp": "2024-01-15T10:30:00.000Z",
-    "uptime": 3600
+    "access_token": "ghp_xxxxxxxxxxxxxxxxxxxx"
   }
 }
 ```
 
-**Basic Health Check:**
+### 🌿 Repository Branches
+
+**Get Repository Branches**
+
 ```http
-GET /health
+POST /api/github/branches
+Content-Type: application/json
+
+{
+  "githubUrl": "https://github.com/username/repository",
+  "githubToken": "ghp_xxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Branches fetched successfully",
+  "data": {
+    "branches": [
+      {
+        "name": "main",
+        "protected": true,
+        "sha": "abc123..."
+      },
+      {
+        "name": "develop",
+        "protected": false,
+        "sha": "def456..."
+      }
+    ]
+  }
+}
+```
+
+### 🏥 Health Check
+
+**System Health Check**
+
+```http
+GET /api/health
 ```
 
 **Response:**
@@ -202,7 +222,8 @@ GET /health
   "timestamp": "2024-01-15T10:30:00.000Z", 
   "uptime": 3600,
   "version": "1.0.0",
-  "service": "ClaudeCodex API"
+  "service": "ClaudeCodex API",
+  "environment": "development"
 }
 ```
 
@@ -229,14 +250,16 @@ GET /health
 backend/
 ├── src/
 │   ├── controllers/          # API route handlers
-│   │   └── core.controller.ts
+│   │   ├── dev.controller.ts   # Main execute endpoint
+│   │   └── github.controller.ts # GitHub operations
 │   ├── services/             # Business logic
 │   │   ├── ai.service.ts     # AI integration (Claude/GPT)
 │   │   ├── github.service.ts # GitHub API operations
 │   │   ├── git.service.ts    # Git operations
 │   │   └── process.service.ts # Main processing logic
 │   ├── routes/               # Express routes
-│   │   ├── core.routes.ts    # Core API endpoints
+│   │   ├── dev.routes.ts     # Dev endpoints
+│   │   ├── github.routes.ts  # GitHub endpoints
 │   │   └── index.ts          # Route aggregation
 │   ├── types/                # TypeScript interfaces
 │   │   └── api.types.ts      # Request/response types

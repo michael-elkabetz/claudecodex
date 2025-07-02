@@ -7,7 +7,7 @@ export interface UploadedFile {
   size: number;
 }
 
-export interface ProcessRequest {
+export interface ExecuteRequest {
   prompt: string;
   apiKey?: string;
   githubUrl: string;
@@ -16,7 +16,7 @@ export interface ProcessRequest {
   branch?: string;
 }
 
-export interface ProcessResponse {
+export interface ExecuteResponse {
   success: boolean;
   message?: string;
   data?: {

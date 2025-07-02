@@ -72,7 +72,7 @@ export class GitHubService {
         }
     }
 
-    async createBranch(token: string, owner: string, repo: string, branchName: string, fromBranch: string = 'main'): Promise<void> {
+    async createBranch(token: string, owner: string, repo: string, branchName: string, fromBranch: string = 'main'): Promise<{branchName: string; branchUrl: string; sha: string}> {
         try {
             this.initOctokit(token);
 
@@ -82,20 +82,27 @@ export class GitHubService {
                 branch: fromBranch,
             });
 
-            await this.octokit!.rest.git.createRef({
+            const result = await this.octokit!.rest.git.createRef({
                 owner,
                 repo,
                 ref: `refs/heads/${branchName}`,
                 sha: baseBranch.data.commit.sha,
             });
+            
             console.log(`✅ Branch '${branchName}' created successfully!`);
+            
+            return {
+                branchName,
+                branchUrl: `https://github.com/${owner}/${repo}/tree/${branchName}`,
+                sha: result.data.object.sha
+            };
         } catch (error) {
             console.error('Error creating branch:', error);
             throw new Error(`Failed to create branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
-    async createPullRequest(token: string, owner: string, repo: string, title: string, body: string, head: string, base: string = 'main'): Promise<any> {
+    async createPullRequest(token: string, owner: string, repo: string, title: string, body: string, head: string, base: string = 'main'): Promise<{pullRequestUrl: string; pullRequestNumber: number}> {
         try {
             this.initOctokit(token);
 
@@ -108,7 +115,10 @@ export class GitHubService {
 
             if (existingPRs.data.length > 0) {
                 console.log(`✅ PR already exists for branch '${head}':`, existingPRs.data[0].html_url);
-                return existingPRs.data[0];
+                return {
+                    pullRequestUrl: existingPRs.data[0].html_url,
+                    pullRequestNumber: existingPRs.data[0].number
+                };
             }
 
             const response = await this.octokit!.rest.pulls.create({
@@ -120,7 +130,10 @@ export class GitHubService {
                 base,
             });
 
-            return response.data;
+            return {
+                pullRequestUrl: response.data.html_url,
+                pullRequestNumber: response.data.number
+            };
         } catch (error: any) {
             if (error.message && error.message.includes('A pull request already exists')) {
                 console.log(`🔄 PR already exists for branch '${head}', fetching existing PR...`);
@@ -138,7 +151,10 @@ export class GitHubService {
 
                         if (existingPRs.data.length > 0) {
                             console.log(`✅ Found existing PR:`, existingPRs.data[0].html_url);
-                            return existingPRs.data[0];
+                            return {
+                                pullRequestUrl: existingPRs.data[0].html_url,
+                                pullRequestNumber: existingPRs.data[0].number
+                            };
                         }
                     }
 
@@ -151,7 +167,10 @@ export class GitHubService {
                     const matchingPR = allPRs.data.find(pr => pr.head.ref === head);
                     if (matchingPR) {
                         console.log(`✅ Found existing PR by manual search:`, matchingPR.html_url);
-                        return matchingPR;
+                        return {
+                            pullRequestUrl: matchingPR.html_url,
+                            pullRequestNumber: matchingPR.number
+                        };
                     }
 
                 } catch (fetchError) {

@@ -7,7 +7,7 @@ import {useEffect, useState, useRef, KeyboardEvent} from "react";
 import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
 import {GITHUB_CONFIG} from "@/config/github";
-import {CORE_API_URL} from "@/config/api";
+import {DEV_API_URL, GITHUB_API_URL} from "@/config/api";
 import ProcessAnimation from "./ProcessAnimation";
 
 const PromptForm = () => {
@@ -92,7 +92,7 @@ const PromptForm = () => {
 
     const exchangeCodeForToken = async (code: string) => {
         try {
-            const response = await fetch(`${CORE_API_URL}/github-auth`, {
+            const response = await fetch(`${GITHUB_API_URL}/auth`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ const PromptForm = () => {
                 formData.append('files', file);
             });
 
-            const response = await fetch(`${CORE_API_URL}/process`, {
+            const response = await fetch(`${DEV_API_URL}/execute`, {
                 method: 'POST',
                 body: formData,
             });
@@ -293,7 +293,7 @@ const PromptForm = () => {
             setIsFetchingBranches(true);
             setBranches([]);
 
-            const response = await fetch(`${CORE_API_URL}/branches`, {
+            const response = await fetch(`${GITHUB_API_URL}/branches`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -585,22 +585,24 @@ const PromptForm = () => {
                                 ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
-                                <div className="relative">
-                                    <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
-                                    <Input
-                                        id="api-key"
-                                        type="password"
-                                        placeholder="sk-..."
-                                        value={apiKey}
-                                        onChange={(e) => {
-                                            setApiKey(e.target.value);
-                                            if (hasError) setHasError(false);
-                                        }}
-                                        className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                        style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
-                                        disabled={isLoading}
-                                    />
-                                </div>
+                                <form onSubmit={(e) => e.preventDefault()}>
+                                    <div className="relative">
+                                        <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
+                                        <Input
+                                            id="api-key"
+                                            type="password"
+                                            placeholder="sk-..."
+                                            value={apiKey}
+                                            onChange={(e) => {
+                                                setApiKey(e.target.value);
+                                                if (hasError) setHasError(false);
+                                            }}
+                                            className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
+                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -815,22 +817,24 @@ const PromptForm = () => {
                                 ) : null}
                             </div>
                             <div className="bg-white border rounded-b-md shadow-lg p-4">
-                                <div className="relative">
-                                    <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
-                                    <Input
-                                        id="api-key-mobile"
-                                        type="password"
-                                        placeholder="sk-..."
-                                        value={apiKey}
-                                        onChange={(e) => {
-                                            setApiKey(e.target.value);
-                                            if (hasError) setHasError(false);
-                                        }}
-                                        className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
-                                        style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
-                                        disabled={isLoading}
-                                    />
-                                </div>
+                                <form onSubmit={(e) => e.preventDefault()}>
+                                    <div className="relative">
+                                        <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
+                                        <Input
+                                            id="api-key-mobile"
+                                            type="password"
+                                            placeholder="sk-..."
+                                            value={apiKey}
+                                            onChange={(e) => {
+                                                setApiKey(e.target.value);
+                                                if (hasError) setHasError(false);
+                                            }}
+                                            className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none"
+                                            style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

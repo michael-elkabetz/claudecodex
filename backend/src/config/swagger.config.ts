@@ -7,21 +7,14 @@ const options: swaggerJsdoc.Options = {
       title: 'ClaudeCodex API',
       version: '1.0.0',
       description: `
-        🤖 **AI-Powered Code Generation API**
-        
-        This API enables automatic code generation and GitHub integration using AI models.
-        
-        ## Features
-        - 🔐 GitHub OAuth integration
-        - 🧠 Support for Anthropic Claude & OpenAI GPT
-        - 🌿 Automatic branch creation
-        - 📝 Code generation and repository updates
-        - 🔄 Pull request automation
-        
-        ## Getting Started
-        1. Authorize with GitHub using \`/api/core/github-auth\`
-        2. Submit your coding request via \`/api/core/process\`
-        3. Get your pull request URL instantly!
+  🤖 **AI-Powered Code Generation API**
+    
+    This API enables automatic code generation and GitHub integration using ClaudeCode and Codex.
+    
+    - **🤖 Execute**: \`POST /api/dev/execute\` - Complete AI workflow (branch creation, code generation, PR creation)
+    - **🏥 Health**: \`GET /api/health\` - Health check
+    - **🔐 Auth**: \`POST /api/github/auth\` - GitHub OAuth
+    - **🌿 Branches**: \`POST /api/github/branches\` - Get repository branches
       `,
       contact: {
         name: 'API Support',
@@ -87,9 +80,9 @@ const options: swaggerJsdoc.Options = {
             }
           }
         },
-        ProcessRequest: {
+        ExecuteRequest: {
           type: 'object',
-          required: ['prompt', 'apiKey', 'githubUrl'],
+          required: ['prompt', 'githubUrl'],
           properties: {
             prompt: {
               type: 'string',
@@ -110,10 +103,18 @@ const options: swaggerJsdoc.Options = {
               type: 'string',
               description: 'GitHub access token (optional - can be provided via GITHUB_TOKEN environment variable)',
               example: 'ghp_xxxxxxxxxxxxxxxxxxxx'
+            },
+            files: {
+              type: 'array',
+              items: {
+                type: 'string',
+                format: 'binary'
+              },
+              description: 'Optional files to include in the request (max 10 files, 10MB each)'
             }
           }
         },
-        ProcessResponse: {
+        ExecuteResponse: {
           type: 'object',
           properties: {
             success: {
@@ -156,7 +157,7 @@ const options: swaggerJsdoc.Options = {
                   type: 'string',
                   description: 'Repository owner',
                   example: 'username'
-                },
+                }
               }
             }
           }
@@ -185,26 +186,29 @@ const options: swaggerJsdoc.Options = {
         HealthResponse: {
           type: 'object',
           properties: {
-            success: {
-              type: 'boolean',
-              example: true
-            },
-            message: {
+            status: {
               type: 'string',
-              example: 'Core service is healthy'
+              example: 'OK'
             },
-            data: {
-              type: 'object',
-              properties: {
-                timestamp: {
-                  type: 'string',
-                  format: 'date-time'
-                },
-                uptime: {
-                  type: 'number',
-                  description: 'Server uptime in seconds'
-                }
-              }
+            timestamp: {
+              type: 'string',
+              format: 'date-time'
+            },
+            uptime: {
+              type: 'number',
+              description: 'Server uptime in seconds'
+            },
+            version: {
+              type: 'string',
+              example: '1.0.0'
+            },
+            service: {
+              type: 'string',
+              example: 'ClaudeCodex API'
+            },
+            environment: {
+              type: 'string',
+              example: 'development'
             }
           }
         }
@@ -212,20 +216,20 @@ const options: swaggerJsdoc.Options = {
     },
     tags: [
       {
-        name: 'Authentication',
-        description: '🔐 GitHub OAuth operations'
-      },
-      {
         name: 'Core',
-        description: '🤖 Main AI-powered code generation'
+        description: '🤖 Main AI-powered code generation workflow'
       },
       {
-        name: 'Health',
-        description: '🏥 System health and monitoring'
+        name: 'GitHub',
+        description: '🔐 GitHub authentication and repository operations'
+      },
+      {
+        name: 'System',
+        description: '🏥 System health and API information'
       }
     ]
   },
-  apis: ['./src/routes/*.ts'],
+  apis: ['./src/routes/*.ts', './src/index.ts'],
 };
 
 const specs = swaggerJsdoc(options);

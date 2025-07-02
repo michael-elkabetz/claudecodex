@@ -23,7 +23,7 @@ The fastest way to get ClaudeCodex running is with our pre-built Docker image:
 ```bash
 docker run -e GITHUB_TOKEN=[ghp_xxx] \
            -e API_KEY=[sk-...-xxx] \ # Optional
-           claudecodx/claudecodx:v1.0.0-alpha
+           claudecodex/claudecodex:v1.0.0-alpha
 ```
 
 
@@ -36,11 +36,12 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
            -e GITHUB_CLIENT_SECRET=[your_client_secret] \
            -e GITHUB_REDIRECT_URI=http://localhost:3000 \
            -e API_KEY=[sk-...-xxx] \ # Optional 
-           claudecodex/claudecodx:v1.0.0-alpha
+           claudecodex/claudecodex:v1.0.0-alpha
 ```
 
 **Optional Environment Variables:**
 - `API_KEY`: Your Anthropic Claude or OpenAI API key
+- `GITHUB_TOKEN`: GitHub access token (alternative to providing it in requests)
 
 ### Production
 
@@ -108,8 +109,8 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 3.  **Build and deploy:**
 
     ```bash
-    docker build -t claudecodx-backend .
-    docker run -d -p 80:80 claudecodx-backend
+    docker build -t ClaudeCodex-backend .
+    docker run -d -p 80:80 ClaudeCodex-backend
     ```
 
 ### Development
@@ -151,12 +152,12 @@ docker build -f frontend/Dockerfile -t claudecodex-frontend ./frontend
 docker run -d -p 80:80 claudecodex-frontend
 
 # Backend
-docker build -f backend/Dockerfile -t claudecodex-backend ./backend
-docker run -d -p 3000:3000 claudecodex-backend
+docker build -f backend/Dockerfile -t ClaudeCodex-backend ./backend
+docker run -d -p 3000:3000 ClaudeCodex-backend
 
 # MCP Server
-docker build -f mcp/Dockerfile -t claudecodex-mcp ./mcp
-docker run -d -p 6213:6213 claudecodex-mcp
+docker build -f mcp/Dockerfile -t ClaudeCodex-mcp ./mcp
+docker run -d -p 6213:6213 ClaudeCodex-mcp
 ```
 
 ### Docker Compose Services
@@ -198,9 +199,10 @@ The MCP server runs on port `6213` and provides AI-powered code generation capab
 
 #### MCP Tools Available
 
-- **Code Generation**: AI-powered code creation
-- **GitHub Integration**: Repository management
-- **Project Analysis**: Code review and suggestions
+- **Execute**: Complete AI-powered workflow (code generation, branch creation, PR automation)
+  - Integrates with GitHub repositories
+  - Supports Anthropic Claude and OpenAI GPT
+  - Automated branch and PR creation
 
 ## 📖 API Documentation
 
@@ -209,9 +211,10 @@ The MCP server runs on port `6213` and provides AI-powered code generation capab
 ![Swagger](https://img.shields.io/badge/📋_API-Docs-85EA2D?style=flat&logo=swagger&logoColor=white)
 
 - **Swagger UI**: http://localhost:3000/api-docs
-- **Health Check**: `GET /health`
-- **Generate Code**: `POST /api/generate`
-- **GitHub Integration**: `POST /api/github`
+- **Health Check**: `GET /api/health`
+- **AI Code Generation**: `POST /api/dev/execute`
+- **GitHub Authentication**: `POST /api/github/auth`
+- **Repository Branches**: `POST /api/github/branches`
 
 ### MCP Protocol
 
@@ -230,7 +233,7 @@ The MCP server runs on port `6213` and provides AI-powered code generation capab
 ### Project Structure
 
 ```
-claudecodex/
+ClaudeCodex/
 ├── frontend/          # React TypeScript UI
 ├── backend/           # Express.js API
 ├── mcp/              # MCP Server

@@ -107,6 +107,66 @@ export class AIService {
         }
     }
 
+    async generatePRDescriptionWithClaude(apiKey: string, prompt: string): Promise<AIResponse> {
+        try {
+            this.initAnthropic(apiKey);
+
+            const response = await this.anthropic!.messages.create({
+                model: 'claude-3-5-sonnet-20240620',
+                max_tokens: 500,
+                temperature: 0.3,
+                messages: [{role: 'user', content: prompt}]
+            });
+
+            const content = response.content[0].type === 'text' ? response.content[0].text : '';
+            const usage = response.usage;
+
+            return {
+                content,
+                usage: {
+                    inputTokens: usage.input_tokens,
+                    outputTokens: usage.output_tokens,
+                    totalTokens: usage.input_tokens + usage.output_tokens,
+                },
+            };
+        } catch (error) {
+            console.error('Error with Anthropic API:', error);
+            throw new Error(`Anthropic API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    async generatePRDescriptionWithGPT(apiKey: string, prompt: string): Promise<AIResponse> {
+        try {
+            this.initOpenAI(apiKey);
+
+            const response = await this.openai!.chat.completions.create({
+                model: 'gpt-4.1-mini',
+                max_completion_tokens: 500,
+                temperature: 0.3,
+                messages: [{role: 'user', content: prompt}]
+            });
+
+            const content = response.choices[0]?.message?.content || '';
+            const usage = response.usage;
+
+            if (!usage) {
+                throw new Error('No usage information returned from OpenAI');
+            }
+
+            return {
+                content,
+                usage: {
+                    inputTokens: usage.prompt_tokens,
+                    outputTokens: usage.completion_tokens,
+                    totalTokens: usage.total_tokens
+                },
+            };
+        } catch (error) {
+            console.error('Error with OpenAI API:', error);
+            throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
     async generateCodeWithClaudeCodeCLI(apiKey: string, prompt: string, workspacePath?: string): Promise<AIResponse> {
         try {
             if (!this.validateAnthropicKey(apiKey)) {
