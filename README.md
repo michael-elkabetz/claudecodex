@@ -45,7 +45,7 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 
 **🤖 Supported AI Models:**
 - **Anthropic**: claude-sonnet-4-20250514 (default), claude-opus-4-20250514, claude-3.7-sonnet-20250219
-- **OpenAI**: codex-1 (default), codex-mini-latest
+- **OpenAI**: codex-mini-latest (default), o4-mini
 
 ### Production
 

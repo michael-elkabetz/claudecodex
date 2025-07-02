@@ -129,8 +129,8 @@ Content-Type: multipart/form-data
 - `claude-3.7-sonnet-20250219`
 
 🧠 **OpenAI Codex (prefix: sk-)**
-- `codex-1` (default)
-- `codex-mini-latest`
+- `codex-mini-latest` (default)
+- `o4-mini`
 
 > **Auto-Detection**: The system automatically detects the AI provider based on your API key prefix and uses the appropriate CLI tool and default model.
 

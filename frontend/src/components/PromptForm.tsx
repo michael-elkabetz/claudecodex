@@ -58,8 +58,8 @@ const PromptForm = () => {
     const branchDropdownRef = useRef<HTMLDivElement>(null);
 
     const modelMapping: { [key: string]: string } = {
-        'codex-1': 'Codex 1',
         'codex-mini-latest': 'Codex Mini',
+        'o4-mini': 'o4 Mini',
         'claude-sonnet-4-20250514': 'Claude 4 Sonnet',
         'claude-opus-4-20250514': 'Claude 4 Opus',
         'claude-3.7-sonnet-20250219': 'Claude 3.7 Sonnet',
@@ -431,7 +431,7 @@ const PromptForm = () => {
         if (apiKey.startsWith('sk-ant-')) {
             return getModelDisplayName('claude-sonnet-4-20250514');
         } else if (apiKey.startsWith('sk-') && !apiKey.includes('ant')) {
-            return getModelDisplayName('codex-1');
+            return getModelDisplayName('codex-mini-latest');
         }
         return "Select Model";
     };
@@ -564,7 +564,7 @@ const PromptForm = () => {
                                                                     <SelectItem value="default">
                                                                         {defaultModelName()}
                                                                     </SelectItem>
-                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-1')).map(model => (
+                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-mini-latest')).map(model => (
                                                                         <SelectItem key={model} value={model}>
                                                                             {getModelDisplayName(model)}
                                                                         </SelectItem>
@@ -860,7 +860,7 @@ const PromptForm = () => {
                                                                     <SelectItem value="default">
                                                                         {defaultModelName()}
                                                                     </SelectItem>
-                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-1')).map(model => (
+                                                                    {getAvailableModelsForProvider().filter(model => model !== (apiKey.startsWith('sk-ant-') ? 'claude-sonnet-4-20250514' : 'codex-mini-latest')).map(model => (
                                                                         <SelectItem key={model} value={model}>
                                                                             {getModelDisplayName(model)}
                                                                         </SelectItem>
