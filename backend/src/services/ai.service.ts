@@ -15,18 +15,18 @@ export class AIService {
     private anthropic: Anthropic | null = null;
     private openai: OpenAI | null = null;
 
-    private readonly DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini';
-    private readonly DEFAULT_ANTHROPIC_MODEL = 'claude-3-5-sonnet-20240620';
+    private readonly DEFAULT_OPENAI_MODEL = 'codex-1';
+    private readonly DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
+    private readonly DEFAULT_GPT_MODEL = 'gpt-4o-mini';
 
     private readonly VALID_OPENAI_MODELS = [
-        'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
-        'gpt-4o', 'gpt-4o-mini', 'gpt-4', 'gpt-4-turbo',
-        'gpt-3.5-turbo', 'o1', 'o3', 'o4-mini'
+        'codex-1', 'codex-mini-latest'
     ];
 
     private readonly VALID_ANTHROPIC_MODELS = [
-        'claude-3-5-sonnet-20240620', 'claude-3-5-haiku-20241022',
-        'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+        'claude-sonnet-4-20250514',
+        'claude-opus-4-20250514',
+        'claude-3.7-sonnet-20250219'
     ];
 
     private initAnthropic(apiKey: string): void {
@@ -59,40 +59,34 @@ export class AIService {
         return 'unknown';
     }
 
-    async generateBranchNameWithGPT(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
+    async generateBranchNameWithOpenAI(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
-            this.initOpenAI(apiKey);
+            const openai = new OpenAI({ apiKey });
 
-            const response = await this.openai!.chat.completions.create({
-                model: this.validateAndGetOpenAIModel(model),
-                max_completion_tokens: 50,
-                temperature: 0.1,
-                messages: [{role: 'user', content: prompt}]
+            const completion = await openai.chat.completions.create({
+                model: this.DEFAULT_GPT_MODEL,
+                messages: [{ role: 'user', content: this.getBranchNamePrompt(prompt) }],
+                max_tokens: 20,
             });
 
-            const content = response.choices[0]?.message?.content || '';
-            const usage = response.usage;
-
-            if (!usage) {
-                throw new Error('No usage information returned from OpenAI');
-            }
-
+            const content = completion.choices[0].message?.content || '';
+            const usage = completion.usage;
 
             return {
                 content,
                 usage: {
-                    inputTokens: usage.prompt_tokens,
-                    outputTokens: usage.completion_tokens,
-                    totalTokens: usage.total_tokens
+                    inputTokens: usage?.prompt_tokens || 0,
+                    outputTokens: usage?.completion_tokens || 0,
+                    totalTokens: usage?.total_tokens || 0,
                 },
             };
         } catch (error) {
             console.error('Error with OpenAI API:', error);
-            throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to generate branch name with GPT: ${error instanceof Error ? error.message : 'Unknown OpenAI error'}`);
         }
     }
 
-    async generateBranchNameWithClaude(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
+    async generateBranchNameWithAntropic(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
             this.initAnthropic(apiKey);
 
@@ -151,48 +145,46 @@ export class AIService {
 
     async generatePRDescriptionWithGPT(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
-            this.initOpenAI(apiKey);
+            const openai = new OpenAI({ apiKey });
 
-            const response = await this.openai!.chat.completions.create({
-                model: this.validateAndGetOpenAIModel(model),
-                max_completion_tokens: 500,
-                temperature: 0.3,
-                messages: [{role: 'user', content: prompt}]
+            const completion = await openai.chat.completions.create({
+                model: this.DEFAULT_GPT_MODEL,
+                messages: [{ role: 'user', content: this.getPRDescriptionPrompt(prompt) }],
+                max_tokens: 500,
+                temperature: 0.7,
             });
 
-            const content = response.choices[0]?.message?.content || '';
-            const usage = response.usage;
-
-            if (!usage) {
-                throw new Error('No usage information returned from OpenAI');
-            }
+            const content = completion.choices[0].message?.content || '';
+            const usage = completion.usage;
 
             return {
                 content,
                 usage: {
-                    inputTokens: usage.prompt_tokens,
-                    outputTokens: usage.completion_tokens,
-                    totalTokens: usage.total_tokens
+                    inputTokens: usage?.prompt_tokens || 0,
+                    outputTokens: usage?.completion_tokens || 0,
+                    totalTokens: usage?.total_tokens || 0,
                 },
             };
         } catch (error) {
-            console.error('Error with OpenAI API:', error);
-            throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            console.error('Error with OpenAI API for PR Description:', error);
+            throw new Error(`Failed to generate PR description with GPT: ${error instanceof Error ? error.message : 'Unknown OpenAI error'}`);
         }
     }
 
-    async generateCodeWithClaudeCodeCLI(apiKey: string, prompt: string, workspacePath?: string): Promise<AIResponse> {
+    async generateCodeWithClaudeCodeCLI(apiKey: string, prompt: string, workspacePath?: string, model?: string): Promise<AIResponse> {
         try {
             if (!this.validateAnthropicKey(apiKey)) {
                 throw new Error('Invalid Anthropic API key format. Must start with sk-ant-');
             }
 
             const sanitizedPrompt = this.sanitizePrompt(prompt);
+            const selectedModel = this.validateAndGetModel(model, 'anthropic');
 
             const result = await this.executeCLICommand('claude', ['-p', '--dangerously-skip-permissions'], {
                 input: sanitizedPrompt,
                 env: {
                     ANTHROPIC_API_KEY: apiKey,
+                    ANTHROPIC_MODEL: selectedModel,
                 },
                 cwd: workspacePath || process.cwd(),
                 timeout: 1000000
@@ -234,10 +226,11 @@ export class AIService {
             }
 
             const sanitizedPrompt = this.sanitizePrompt(prompt);
+            const selectedModel = this.validateAndGetModel(model, 'openai');
 
             const codexArgs = ['-q', '-a', 'auto-edit'];
-            if (model && this.VALID_OPENAI_MODELS.includes(model)) {
-                codexArgs.push('-m', model);
+            if (selectedModel) {
+                codexArgs.push('-m', selectedModel);
             }
             codexArgs.push(sanitizedPrompt);
 
@@ -357,30 +350,28 @@ export class AIService {
         }
     }
 
-    private validateAndGetOpenAIModel(model?: string): string {
-        if (!model) {
-            return this.DEFAULT_OPENAI_MODEL;
+    private validateAndGetModel(model: string | undefined, provider: 'openai' | 'anthropic'): string {
+        const validModels = provider === 'openai' ? this.VALID_OPENAI_MODELS : this.VALID_ANTHROPIC_MODELS;
+        const defaultModel = provider === 'openai' ? this.DEFAULT_OPENAI_MODEL : this.DEFAULT_ANTHROPIC_MODEL;
+        
+        if (!model || model === 'default') {
+            return defaultModel;
         }
         
-        if (!this.VALID_OPENAI_MODELS.includes(model)) {
-            console.warn(`Invalid OpenAI model '${model}', using default: ${this.DEFAULT_OPENAI_MODEL}`);
-            return this.DEFAULT_OPENAI_MODEL;
+        if (!validModels.includes(model)) {
+            console.warn(`Invalid ${provider} model '${model}', using default: ${defaultModel}`);
+            return defaultModel;
         }
         
         return model;
     }
 
+    private validateAndGetOpenAIModel(model?: string): string {
+        return this.validateAndGetModel(model, 'openai');
+    }
+
     private validateAndGetAnthropicModel(model?: string): string {
-        if (!model) {
-            return this.DEFAULT_ANTHROPIC_MODEL;
-        }
-        
-        if (!this.VALID_ANTHROPIC_MODELS.includes(model)) {
-            console.warn(`Invalid Anthropic model '${model}', using default: ${this.DEFAULT_ANTHROPIC_MODEL}`);
-            return this.DEFAULT_ANTHROPIC_MODEL;
-        }
-        
-        return model;
+        return this.validateAndGetModel(model, 'anthropic');
     }
 
     getAvailableModels(): { openai: string[], anthropic: string[] } {
@@ -388,5 +379,13 @@ export class AIService {
             openai: [...this.VALID_OPENAI_MODELS],
             anthropic: [...this.VALID_ANTHROPIC_MODELS]
         };
+    }
+
+    getBranchNamePrompt(prompt: string): string {
+        return `Based on the following prompt, generate a descriptive, concise, and lowercase branch name in kebab-case format. The branch name should not include any special characters other than hyphens. Prompt: "${prompt}"`;
+    }
+
+    getPRDescriptionPrompt(prompt: string): string {
+        return `Based on the following prompt, generate a detailed and concise description of the pull request. The description should be in markdown format. Prompt: "${prompt}"`;
     }
 } 

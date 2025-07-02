@@ -119,8 +119,8 @@ router.post('/execute', upload.array('files', 10), devController.process);
  *               success: true
  *               message: "Available models retrieved successfully"
  *               data:
- *                 openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o", "o3"]
- *                 anthropic: ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229"]
+ *                 openai: ["codex-1", "codex-mini-latest"]
+ *                 anthropic: ["claude-sonnet-4-20250514", "claude-4-opus-20250514", "claude-3.7-sonnet-20250219"]
  */
 router.get('/models', devController.models);
 

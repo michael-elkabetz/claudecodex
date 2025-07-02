@@ -147,9 +147,9 @@ export class ProcessService {
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {
-            aiResponse = await this.aiService.generateBranchNameWithClaude(request.apiKey, branchPrompt, request.model);
+            aiResponse = await this.aiService.generateBranchNameWithAntropic(request.apiKey, branchPrompt, request.model);
         } else {
-            aiResponse = await this.aiService.generateBranchNameWithGPT(request.apiKey, branchPrompt, request.model);
+            aiResponse = await this.aiService.generateBranchNameWithOpenAI(request.apiKey, branchPrompt, request.model);
         }
 
         let branchName = aiResponse.content.trim().toLowerCase();
@@ -201,7 +201,7 @@ export class ProcessService {
 
             if (aiProvider === 'anthropic') {
                 console.log('🤖 Generating code with Claude Code...');
-                await this.aiService.generateCodeWithClaudeCodeCLI(request.apiKey, enhancedPrompt, workspacePath);
+                await this.aiService.generateCodeWithClaudeCodeCLI(request.apiKey, enhancedPrompt, workspacePath, request.model);
             } else {
                 console.log('🤖 Generating code with Codex...');
                 await this.aiService.generateCodeWithCodexCLI(request.apiKey, enhancedPrompt, workspacePath, request.model);
@@ -319,27 +319,18 @@ export class ProcessService {
             status: string;
         }>;
     }, model?: string): Promise<string> {
-        console.log('🤖 Generating PR description with AI...');
-
+        console.log('📝 Generating pull request description...');
         const aiProvider = this.aiService.detectProvider(apiKey);
-        
-        const changesText = changeSummary.changes
-            .map(change => `- ${change.path} (${change.status})`)
-            .join('\n');
-
-        const prDescriptionPrompt = this.getPRPrompt(originalPrompt, changeSummary.totalFiles, changesText);
+        const changesText = changeSummary.changes.map(c => `${c.status}: ${c.path}`).join('\n');
+        const prPrompt = this.getPRPrompt(originalPrompt, changeSummary.totalFiles, changesText);
 
         let aiResponse: AIResponse;
         if (aiProvider === 'anthropic') {
-            aiResponse = await this.aiService.generatePRDescriptionWithClaude(apiKey, prDescriptionPrompt, model);
+            aiResponse = await this.aiService.generatePRDescriptionWithClaude(apiKey, prPrompt, model);
         } else {
-            aiResponse = await this.aiService.generatePRDescriptionWithGPT(apiKey, prDescriptionPrompt, model);
+            aiResponse = await this.aiService.generatePRDescriptionWithGPT(apiKey, prPrompt, model);
         }
-
-        const prDescription = aiResponse.content.trim();
-        console.log('📄 Generated PR description');
-        
-        return prDescription;
+        return aiResponse.content;
     }
 
     async createPR(githubToken: string, githubInfo: {
