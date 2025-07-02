@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import { ProcessService } from '../services/process.service';
 import { ExecuteRequest, ApiResponse } from '../types/api.types';
+import { AIService } from '../services/ai.service';
 
 const storage = multer.memoryStorage();
 export const upload = multer({ 
@@ -22,9 +23,11 @@ export const upload = multer({
 
 export class DevController {
   private processService: ProcessService;
+  private aiService: AIService;
 
   constructor() {
     this.processService = new ProcessService();
+    this.aiService = new AIService();
   }
 
 
@@ -36,7 +39,8 @@ export class DevController {
         githubUrl: req.body.githubUrl,
         branch: req.body.branch,
         githubToken: req.body.githubToken?.trim() || process.env.GITHUB_TOKEN,
-        files: req.files as Express.Multer.File[]
+        files: req.files as Express.Multer.File[],
+        model: req.body.model
       };
 
       if (!processRequest.prompt || !processRequest.githubUrl || !processRequest.githubToken) {
@@ -75,6 +79,22 @@ export class DevController {
     } as ApiResponse);
   };
 
-
+  models = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const availableModels = this.aiService.getAvailableModels();
+      res.status(200).json({
+        success: true,
+        message: 'Available models retrieved successfully',
+        data: availableModels
+      } as ApiResponse);
+    } catch (error) {
+      console.error('Error getting available models:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve available models',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      } as ApiResponse);
+    }
+  };
 
 }

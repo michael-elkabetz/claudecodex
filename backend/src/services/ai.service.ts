@@ -15,6 +15,20 @@ export class AIService {
     private anthropic: Anthropic | null = null;
     private openai: OpenAI | null = null;
 
+    private readonly DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini';
+    private readonly DEFAULT_ANTHROPIC_MODEL = 'claude-3-5-sonnet-20240620';
+
+    private readonly VALID_OPENAI_MODELS = [
+        'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+        'gpt-4o', 'gpt-4o-mini', 'gpt-4', 'gpt-4-turbo',
+        'gpt-3.5-turbo', 'o1', 'o3', 'o4-mini'
+    ];
+
+    private readonly VALID_ANTHROPIC_MODELS = [
+        'claude-3-5-sonnet-20240620', 'claude-3-5-haiku-20241022',
+        'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+    ];
+
     private initAnthropic(apiKey: string): void {
         if (!this.anthropic) {
             this.anthropic = new Anthropic({
@@ -45,12 +59,12 @@ export class AIService {
         return 'unknown';
     }
 
-    async generateBranchNameWithGPT(apiKey: string, prompt: string): Promise<AIResponse> {
+    async generateBranchNameWithGPT(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
             this.initOpenAI(apiKey);
 
             const response = await this.openai!.chat.completions.create({
-                model: 'gpt-4.1-mini',
+                model: this.validateAndGetOpenAIModel(model),
                 max_completion_tokens: 50,
                 temperature: 0.1,
                 messages: [{role: 'user', content: prompt}]
@@ -78,12 +92,12 @@ export class AIService {
         }
     }
 
-    async generateBranchNameWithClaude(apiKey: string, prompt: string): Promise<AIResponse> {
+    async generateBranchNameWithClaude(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
             this.initAnthropic(apiKey);
 
             const response = await this.anthropic!.messages.create({
-                model: 'claude-3-5-sonnet-20240620',
+                model: this.validateAndGetAnthropicModel(model),
                 max_tokens: 50,
                 temperature: 0.1,
                 messages: [{role: 'user', content: prompt}]
@@ -107,12 +121,12 @@ export class AIService {
         }
     }
 
-    async generatePRDescriptionWithClaude(apiKey: string, prompt: string): Promise<AIResponse> {
+    async generatePRDescriptionWithClaude(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
             this.initAnthropic(apiKey);
 
             const response = await this.anthropic!.messages.create({
-                model: 'claude-3-5-sonnet-20240620',
+                model: this.validateAndGetAnthropicModel(model),
                 max_tokens: 500,
                 temperature: 0.3,
                 messages: [{role: 'user', content: prompt}]
@@ -135,12 +149,12 @@ export class AIService {
         }
     }
 
-    async generatePRDescriptionWithGPT(apiKey: string, prompt: string): Promise<AIResponse> {
+    async generatePRDescriptionWithGPT(apiKey: string, prompt: string, model?: string): Promise<AIResponse> {
         try {
             this.initOpenAI(apiKey);
 
             const response = await this.openai!.chat.completions.create({
-                model: 'gpt-4.1-mini',
+                model: this.validateAndGetOpenAIModel(model),
                 max_completion_tokens: 500,
                 temperature: 0.3,
                 messages: [{role: 'user', content: prompt}]
@@ -213,7 +227,7 @@ export class AIService {
         }
     }
 
-    async generateCodeWithCodexCLI(apiKey: string, prompt: string, workspacePath?: string): Promise<AIResponse> {
+    async generateCodeWithCodexCLI(apiKey: string, prompt: string, workspacePath?: string, model?: string): Promise<AIResponse> {
         try {
             if (!this.validateOpenAIKey(apiKey)) {
                 throw new Error('Invalid OpenAI API key format. Must start with sk-');
@@ -221,7 +235,13 @@ export class AIService {
 
             const sanitizedPrompt = this.sanitizePrompt(prompt);
 
-            const result = await this.executeCLICommand('codex', ['-q', '-a', 'auto-edit', sanitizedPrompt], {
+            const codexArgs = ['-q', '-a', 'auto-edit'];
+            if (model && this.VALID_OPENAI_MODELS.includes(model)) {
+                codexArgs.push('-m', model);
+            }
+            codexArgs.push(sanitizedPrompt);
+
+            const result = await this.executeCLICommand('codex', codexArgs, {
                 env: {
                     OPENAI_API_KEY: apiKey,
                 },
@@ -335,5 +355,38 @@ export class AIService {
             console.warn('⚠️  Error sanitizing prompt, using original:', error);
             return prompt;
         }
+    }
+
+    private validateAndGetOpenAIModel(model?: string): string {
+        if (!model) {
+            return this.DEFAULT_OPENAI_MODEL;
+        }
+        
+        if (!this.VALID_OPENAI_MODELS.includes(model)) {
+            console.warn(`Invalid OpenAI model '${model}', using default: ${this.DEFAULT_OPENAI_MODEL}`);
+            return this.DEFAULT_OPENAI_MODEL;
+        }
+        
+        return model;
+    }
+
+    private validateAndGetAnthropicModel(model?: string): string {
+        if (!model) {
+            return this.DEFAULT_ANTHROPIC_MODEL;
+        }
+        
+        if (!this.VALID_ANTHROPIC_MODELS.includes(model)) {
+            console.warn(`Invalid Anthropic model '${model}', using default: ${this.DEFAULT_ANTHROPIC_MODEL}`);
+            return this.DEFAULT_ANTHROPIC_MODEL;
+        }
+        
+        return model;
+    }
+
+    getAvailableModels(): { openai: string[], anthropic: string[] } {
+        return {
+            openai: [...this.VALID_OPENAI_MODELS],
+            anthropic: [...this.VALID_ANTHROPIC_MODELS]
+        };
     }
 } 

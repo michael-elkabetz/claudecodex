@@ -3,8 +3,9 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {Badge} from "@/components/ui/badge";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {useEffect, useState, useRef, KeyboardEvent} from "react";
-import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown} from "lucide-react";
+import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown, Cpu} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
 import {GITHUB_CONFIG} from "@/config/github";
 import {DEV_API_URL, GITHUB_API_URL} from "@/config/api";
@@ -33,10 +34,42 @@ const PromptForm = () => {
     const [githubToken, setGithubToken] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(false);
+    const [availableModels, setAvailableModels] = useState<{openai: string[], anthropic: string[]}>({openai: [], anthropic: []});
+    const [selectedModel, setSelectedModel] = useState<string>("");
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
     const {toast} = useToast();
     const formRef = useRef<HTMLFormElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const branchDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Get available models based on current API key
+    const getAvailableModelsForProvider = () => {
+        if (apiKey.startsWith('sk-ant-')) {
+            return availableModels.anthropic;
+        } else if (apiKey.startsWith('sk-') && !apiKey.includes('ant')) {
+            return availableModels.openai;
+        }
+        return [];
+    };
+
+    // Fetch available models
+    const fetchAvailableModels = async () => {
+        try {
+            setIsLoadingModels(true);
+            const response = await fetch(`${DEV_API_URL}/models`);
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                setAvailableModels(result.data);
+            } else {
+                console.error('Failed to fetch models:', result.message);
+            }
+        } catch (error) {
+            console.error('Error fetching models:', error);
+        } finally {
+            setIsLoadingModels(false);
+        }
+    };
 
     // Check for GitHub OAuth callback
     useEffect(() => {
@@ -60,6 +93,9 @@ const PromptForm = () => {
             setGithubToken(savedToken);
             setIsAuthorized(true);
         }
+
+        // Fetch available models
+        fetchAvailableModels();
     }, []);
 
     const generateRandomString = (length: number) => {
@@ -189,6 +225,11 @@ const PromptForm = () => {
             formData.append('githubUrl', githubUrl);
             formData.append('githubToken', githubToken);
             
+            // Add selected model if available
+            if (selectedModel) {
+                formData.append('model', selectedModel);
+            }
+            
             // Add selected branch only if it's not main or master
             if (selectedBranch && !['main', 'master'].includes(selectedBranch.toLowerCase())) {
                 formData.append('branch', selectedBranch);
@@ -257,6 +298,7 @@ const PromptForm = () => {
         setFiles([]);
         setBranches([]);
         setSelectedBranch("");
+        setSelectedModel("");
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -605,6 +647,38 @@ const PromptForm = () => {
                                 </form>
                             </div>
                         </div>
+
+                        {/* Model Selection Section */}
+                        {apiKey && getAvailableModelsForProvider().length > 0 && (
+                            <div className="space-y-0 group">
+                                <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
+                                    <Label htmlFor="model-select" className="text-sm font-medium text-gray-700">AI Model (Optional)</Label>
+                                    {isLoadingModels && <Loader2 className="h-4 w-4 animate-spin text-gray-500"/>}
+                                </div>
+                                <div className="bg-white border rounded-b-md shadow-lg p-4">
+                                    <div className="relative">
+                                        <Cpu className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10"/>
+                                        <Select 
+                                            value={selectedModel} 
+                                            onValueChange={setSelectedModel}
+                                            disabled={isLoading || isLoadingModels}
+                                        >
+                                            <SelectTrigger className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none" style={{ outline: 'none', border: 'none', boxShadow: 'none' }}>
+                                                <SelectValue placeholder="Use default model" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="">Use default model</SelectItem>
+                                                {getAvailableModelsForProvider().map((model) => (
+                                                    <SelectItem key={model} value={model}>
+                                                        {model}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Desktop Process Animation */}
@@ -837,6 +911,38 @@ const PromptForm = () => {
                                 </form>
                             </div>
                         </div>
+
+                        {/* Model Selection Section - Mobile */}
+                        {apiKey && getAvailableModelsForProvider().length > 0 && (
+                            <div className="space-y-0 group">
+                                <div className="bg-gray-200 px-4 py-1.5 rounded-t-md group-focus-within:bg-gray-300 flex items-center justify-between">
+                                    <Label htmlFor="model-select-mobile" className="text-sm font-medium text-gray-700">AI Model (Optional)</Label>
+                                    {isLoadingModels && <Loader2 className="h-4 w-4 animate-spin text-gray-500"/>}
+                                </div>
+                                <div className="bg-white border rounded-b-md shadow-lg p-4">
+                                    <div className="relative">
+                                        <Cpu className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10"/>
+                                        <Select 
+                                            value={selectedModel} 
+                                            onValueChange={setSelectedModel}
+                                            disabled={isLoading || isLoadingModels}
+                                        >
+                                            <SelectTrigger className="pl-10 text-base border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none outline-none" style={{ outline: 'none', border: 'none', boxShadow: 'none' }}>
+                                                <SelectValue placeholder="Use default model" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="">Use default model</SelectItem>
+                                                {getAvailableModelsForProvider().map((model) => (
+                                                    <SelectItem key={model} value={model}>
+                                                        {model}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Mobile Process Animation - shows below the form */}

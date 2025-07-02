@@ -54,6 +54,9 @@ const devController = new DevController();
  *                   type: string
  *                   format: binary
  *                 description: Optional files to include in the request
+ *               model:
+ *                 type: string
+ *                 description: AI model to use (optional - uses defaults if not specified)
  *             required:
  *               - prompt
  *               - githubUrl
@@ -97,5 +100,28 @@ const devController = new DevController();
  *               $ref: '#/components/schemas/ApiResponse'
  */
 router.post('/execute', upload.array('files', 10), devController.process);
+
+/**
+ * @swagger
+ * /api/dev/models:
+ *   get:
+ *     summary: 🤖 Get available AI models
+ *     description: Returns lists of available models for both OpenAI and Anthropic providers
+ *     tags: [Core]
+ *     responses:
+ *       200:
+ *         description: Available models retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *             example:
+ *               success: true
+ *               message: "Available models retrieved successfully"
+ *               data:
+ *                 openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o", "o3"]
+ *                 anthropic: ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229"]
+ */
+router.get('/models', devController.models);
 
 export default router; 
