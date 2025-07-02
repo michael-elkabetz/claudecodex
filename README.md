@@ -23,7 +23,7 @@ The fastest way to get ClaudeCodex running is with our pre-built Docker image:
 ```bash
 docker run -e GITHUB_TOKEN=[ghp_xxx] \
            -e API_KEY=[sk-...-xxx] \ # Optional
-           claudecodex/claudecodex:v1.0.0-alpha
+           claudecodex/claudecodex:v1.0.1-alpha
 ```
 
 
@@ -36,7 +36,7 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
            -e GITHUB_CLIENT_SECRET=[your_client_secret] \
            -e GITHUB_REDIRECT_URI=http://localhost:3000 \
            -e API_KEY=[sk-...-xxx] \ # Optional 
-           claudecodex/claudecodex:v1.0.0-alpha
+           claudecodex/claudecodex:v1.0.1-alpha
 ```
 
 **Optional Environment Variables:**
