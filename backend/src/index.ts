@@ -213,7 +213,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
 
 app.use('/api', apiLimiter, validateContentType, routes);
 
-app.use('/api/*/github-auth', authLimiter);
+app.use('/api/github/auth', authLimiter);
 app.use('/api/*/process', authLimiter);
 
 app.get('/health', (req: Request, res: Response) => {

@@ -19,10 +19,10 @@ const options: swaggerJsdoc.Options = {
         - 🔄 Pull request automation
         
         ## Getting Started
-        1. Authorize with GitHub using \`/api/dev/github-auth\`
+        1. Authorize with GitHub using \`/api/github/auth\`
         2. Submit your coding request via \`/api/dev/process\`
-        3. Create branches with \`/api/dev/create-branch\`
-        4. Create pull requests with \`/api/dev/create-pr\`
+        3. Create branches with \`/api/github/create-branch\`
+        4. Create pull requests with \`/api/github/create-pr\`
         5. Get your pull request URL instantly!
       `,
       contact: {

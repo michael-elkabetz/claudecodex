@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import devRoutes from './dev.routes';
+import githubRoutes from './github.routes';
 
 const router = Router();
 
 router.use('/dev', devRoutes);
+router.use('/github', githubRoutes);
 
 /**
  * @swagger
