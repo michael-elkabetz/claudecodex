@@ -120,7 +120,7 @@ router.post('/execute', upload.array('files', 10), devController.process);
  *               message: "Available models retrieved successfully"
  *               data:
  *                 openai: ["codex-mini-latest", "o4-mini"]
- *                 anthropic: ["claude-sonnet-4-20250514", "claude-4-opus-20250514", "claude-3.7-sonnet-20250219"]
+ *                 anthropic: ["claude-sonnet-4-20250514", "claude-4-opus-20250514", "claude-3-7-sonnet-20250219"]
  */
 router.get('/models', devController.models);
 

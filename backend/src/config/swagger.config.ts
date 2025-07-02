@@ -101,7 +101,7 @@ const options: swaggerJsdoc.Options = {
               enum: [
                 'claude-sonnet-4-20250514',
                 'claude-opus-4-20250514',
-                'claude-3.7-sonnet-20250219',
+                'claude-3-7-sonnet-20250219',
                 'codex-mini-latest',
                 'o4-mini',
               ]

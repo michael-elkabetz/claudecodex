@@ -44,7 +44,7 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
 - `GITHUB_TOKEN`: GitHub access token (alternative to providing it in requests)
 
 **🤖 Supported AI Models:**
-- **Anthropic**: claude-sonnet-4-20250514 (default), claude-opus-4-20250514, claude-3.7-sonnet-20250219
+- **Anthropic**: claude-sonnet-4-20250514 (default), claude-opus-4-20250514, claude-3-7-sonnet-20250219
 - **OpenAI**: codex-mini-latest (default), o4-mini
 
 ### Production
