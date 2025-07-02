@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import coreRoutes from './core.routes';
+import devRoutes from './dev.routes';
 
 const router = Router();
 
-router.use('/core', coreRoutes);
+router.use('/dev', devRoutes);
 
 /**
  * @swagger
@@ -16,7 +16,7 @@ router.use('/core', coreRoutes);
  *       **Welcome to the AI-Powered Code Generation API! 🚀**
  *       
  *       This API helps you automatically generate code changes and create pull requests using AI.
- *     tags: [Core]
+ *     tags: [Dev]
  *     responses:
  *       200:
  *         description: ✅ API information
@@ -37,18 +37,24 @@ router.use('/core', coreRoutes);
  *                 endpoints:
  *                   type: object
  *                   properties:
- *                     core:
+ *                     dev:
  *                       type: string
- *                       example: "/api/core"
+ *                       example: "/api/dev"
  *                     health:
  *                       type: string
- *                       example: "/api/core/health"
+ *                       example: "/api/dev/health"
  *                     auth:
  *                       type: string
- *                       example: "/api/core/github-auth"
+ *                       example: "/api/dev/github-auth"
  *                     process:
  *                       type: string
- *                       example: "/api/core/process"
+ *                       example: "/api/dev/process"
+ *                     createBranch:
+ *                       type: string
+ *                       example: "/api/dev/create-branch"
+ *                     createPR:
+ *                       type: string
+ *                       example: "/api/dev/create-pr"
  */
 router.get('/', (req, res) => {
   res.json({
@@ -56,10 +62,12 @@ router.get('/', (req, res) => {
     message: 'ClaudeCodex API',
     version: '1.0.0',
     endpoints: {
-      core: '/api/core',
-      health: '/api/core/health',
-      auth: '/api/core/github-auth',
-      process: '/api/core/process'
+      dev: '/api/dev',
+      health: '/api/dev/health',
+      auth: '/api/dev/github-auth',
+      process: '/api/dev/process',
+      createBranch: '/api/dev/create-branch',
+      createPR: '/api/dev/create-pr'
     }
   });
 });

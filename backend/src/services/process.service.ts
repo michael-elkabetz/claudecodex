@@ -374,20 +374,7 @@ export class ProcessService {
                 branchName
             );
 
-            if (pullRequest.created_at) {
-                const createdTime = new Date(pullRequest.created_at);
-                const now = new Date();
-                const timeDiff = now.getTime() - createdTime.getTime();
-                const isNewPR = timeDiff < 60000;
-
-                if (isNewPR) {
-                    console.log('✅ New Pull Request created:', pullRequest.html_url);
-                } else {
-                    console.log('✅ Existing Pull Request found:', pullRequest.html_url);
-                }
-            } else {
-                console.log('✅ Pull Request ready:', pullRequest.html_url);
-            }
+            console.log('✅ Pull Request ready:', pullRequest.pullRequestUrl);
 
             return pullRequest;
         } catch (error) {

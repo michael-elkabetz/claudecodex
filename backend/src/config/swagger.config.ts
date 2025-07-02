@@ -19,9 +19,11 @@ const options: swaggerJsdoc.Options = {
         - 🔄 Pull request automation
         
         ## Getting Started
-        1. Authorize with GitHub using \`/api/core/github-auth\`
-        2. Submit your coding request via \`/api/core/process\`
-        3. Get your pull request URL instantly!
+        1. Authorize with GitHub using \`/api/dev/github-auth\`
+        2. Submit your coding request via \`/api/dev/process\`
+        3. Create branches with \`/api/dev/create-branch\`
+        4. Create pull requests with \`/api/dev/create-pr\`
+        5. Get your pull request URL instantly!
       `,
       contact: {
         name: 'API Support',
@@ -191,7 +193,7 @@ const options: swaggerJsdoc.Options = {
             },
             message: {
               type: 'string',
-              example: 'Core service is healthy'
+              example: 'Dev service is healthy'
             },
             data: {
               type: 'object',
@@ -216,8 +218,12 @@ const options: swaggerJsdoc.Options = {
         description: '🔐 GitHub OAuth operations'
       },
       {
-        name: 'Core',
+        name: 'Dev',
         description: '🤖 Main AI-powered code generation'
+      },
+      {
+        name: 'Actions',
+        description: '⚡ Development actions (branch creation, PR creation)'
       },
       {
         name: 'Health',

@@ -7,7 +7,7 @@ import {useEffect, useState, useRef, KeyboardEvent} from "react";
 import {AlertCircle, CheckCircle, ExternalLink, Github, GitPullRequest, Key, Loader2, Send, ArrowUp, Paperclip, Plus, X, GitBranch, ChevronDown} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
 import {GITHUB_CONFIG} from "@/config/github";
-import {CORE_API_URL} from "@/config/api";
+import {DEV_API_URL} from "@/config/api";
 import ProcessAnimation from "./ProcessAnimation";
 
 const PromptForm = () => {
@@ -92,7 +92,7 @@ const PromptForm = () => {
 
     const exchangeCodeForToken = async (code: string) => {
         try {
-            const response = await fetch(`${CORE_API_URL}/github-auth`, {
+            const response = await fetch(`${DEV_API_URL}/github-auth`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ const PromptForm = () => {
                 formData.append('files', file);
             });
 
-            const response = await fetch(`${CORE_API_URL}/process`, {
+            const response = await fetch(`${DEV_API_URL}/process`, {
                 method: 'POST',
                 body: formData,
             });
@@ -293,7 +293,7 @@ const PromptForm = () => {
             setIsFetchingBranches(true);
             setBranches([]);
 
-            const response = await fetch(`${CORE_API_URL}/branches`, {
+            const response = await fetch(`${DEV_API_URL}/branches`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

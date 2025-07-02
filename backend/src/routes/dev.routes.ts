@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { CoreController, upload } from '../controllers/core.controller';
+import { DevController, upload } from '../controllers/dev.controller';
 
 const router = Router();
-const coreController = new CoreController();
+const devController = new DevController();
 
 /**
  * @swagger
- * /api/core/github-auth:
+ * /api/dev/github-auth:
  *   post:
  *     summary: 🔐 Exchange GitHub OAuth code for access token
  *     description: |
@@ -51,11 +51,11 @@ const coreController = new CoreController();
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/github-auth', coreController.githubAuth);
+router.post('/github-auth', devController.githubAuth);
 
 /**
  * @swagger
- * /api/core/branches:
+ * /api/dev/branches:
  *   post:
  *     summary: 🌿 Get branches from GitHub repository
  *     description: |
@@ -131,11 +131,11 @@ router.post('/github-auth', coreController.githubAuth);
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/branches', coreController.getBranches);
+router.post('/branches', devController.getBranches);
 
 /**
  * @swagger
- * /api/core/process:
+ * /api/dev/process:
  *   post:
  *     summary: 🤖 Generate code and create pull request
  *     description: | 
@@ -224,14 +224,14 @@ router.post('/branches', coreController.getBranches);
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/process', upload.array('files', 10), coreController.process);
+router.post('/process', upload.array('files', 10), devController.process);
 
 /**
  * @swagger
- * /api/core/health:
+ * /api/dev/health:
  *   get:
  *     summary: 🏥 Check service health
- *     description: Returns the health status of the core service
+ *     description: Returns the health status of the dev service
  *     tags: [Health]
  *     responses:
  *       200:
@@ -247,6 +247,102 @@ router.post('/process', upload.array('files', 10), coreController.process);
  *                 timestamp: "2024-01-15T10:30:00.000Z"
  *                 uptime: 3600
  */
-router.get('/health', coreController.health);
+router.get('/health', devController.health);
+
+/**
+ * @swagger
+ * /api/dev/create-branch:
+ *   post:
+ *     summary: 🌿 Create a new branch with AI-generated name
+ *     description: |
+ *       Creates a new branch in the GitHub repository.
+ *       Uses AI to generate a branch name based on the prompt if API key is provided.
+ *     tags: [Actions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 description: Description for the branch
+ *               apiKey:
+ *                 type: string
+ *                 description: AI API key (optional)
+ *               githubUrl:
+ *                 type: string
+ *                 description: GitHub repository URL
+ *               githubToken:
+ *                 type: string
+ *                 description: GitHub access token
+ *               baseBranch:
+ *                 type: string
+ *                 description: Base branch name (default: main)
+ *             required:
+ *               - prompt
+ *               - githubUrl
+ *               - githubToken
+ *     responses:
+ *       200:
+ *         description: ✅ Branch created successfully
+ *       400:
+ *         description: ❌ Invalid request parameters
+ *       500:
+ *         description: 🔥 Internal server error
+ */
+router.post('/create-branch', devController.createBranch);
+
+/**
+ * @swagger
+ * /api/dev/create-pr:
+ *   post:
+ *     summary: 🔄 Create a pull request with AI-generated description
+ *     description: |
+ *       Creates a pull request for the specified branch.
+ *       Uses AI to generate PR title and description if API key and prompt are provided.
+ *     tags: [Actions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 description: Description for the PR (optional)
+ *               apiKey:
+ *                 type: string
+ *                 description: AI API key (optional)
+ *               githubUrl:
+ *                 type: string
+ *                 description: GitHub repository URL
+ *               githubToken:
+ *                 type: string
+ *                 description: GitHub access token
+ *               branchName:
+ *                 type: string
+ *                 description: Source branch name
+ *               baseBranch:
+ *                 type: string
+ *                 description: Target branch name (default: main)
+ *               title:
+ *                 type: string
+ *                 description: PR title (optional)
+ *             required:
+ *               - githubUrl
+ *               - githubToken
+ *               - branchName
+ *     responses:
+ *       200:
+ *         description: ✅ Pull request created successfully
+ *       400:
+ *         description: ❌ Invalid request parameters
+ *       500:
+ *         description: 🔥 Internal server error
+ */
+router.post('/create-pr', devController.createPR);
 
 export default router; 
