@@ -47,7 +47,7 @@ const getResponsivePositions = () => {
         // Server-side rendering fallback
         return {
             nodes: [
-                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'Rest API' } },
+                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'REST API' } },
                 { id: 'mcp', type: 'ClaudeCodex', position: { x: 0, y: 150 }, data: { label: 'MCP' } },
                 { id: 'frontend', type: 'ClaudeCodex', position: { x: 0, y: 300 }, data: { label: 'Web UI' } },
                 { id: 'ClaudeCodex', type: 'ClaudeCodex', position: { x: 300, y: 150 }, data: { label: 'ClaudeCodex' } },
@@ -64,7 +64,7 @@ const getResponsivePositions = () => {
         // Tablet layout - medium spacing
         return {
             nodes: [
-                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'Rest API' } },
+                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'REST API' } },
                 { id: 'mcp', type: 'ClaudeCodex', position: { x: 0, y: 120 }, data: { label: 'MCP' } },
                 { id: 'frontend', type: 'ClaudeCodex', position: { x: 0, y: 240 }, data: { label: 'Web UI' } },
                 { id: 'ClaudeCodex', type: 'ClaudeCodex', position: { x: 250, y: 120 }, data: { label: 'ClaudeCodex' } },
@@ -76,8 +76,8 @@ const getResponsivePositions = () => {
     } else {
         return {
             nodes: [
-                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'Rest API' } },
-                { id: 'mcp', type: 'ClaudeCodex', position: { x: 0, y: 150 }, data: { label: 'MCP' } },
+                { id: 'rest-api', type: 'ClaudeCodex', position: { x: 0, y: 0 }, data: { label: 'REST API' } },
+                { id: 'mcp', type: 'ClaudeCodex', position: { x: 0, y: 152 }, data: { label: 'MCP' } },
                 { id: 'frontend', type: 'ClaudeCodex', position: { x: 0, y: 300 }, data: { label: 'Web UI' } },
                 { id: 'ClaudeCodex', type: 'ClaudeCodex', position: { x: 300, y: 150 }, data: { label: 'ClaudeCodex' } },
                 { id: 'code-agents', type: 'ClaudeCodex', position: { x: 300, y: 0 }, data: { label: 'Code Agents' } },
@@ -94,8 +94,8 @@ const initialEdges = [
     { id: 'rest-api-ClaudeCodex', animated: true, source: 'rest-api', target: 'ClaudeCodex', sourceHandle: 'source-right', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#10b981' } },
     { id: 'mcp-ClaudeCodex', animated: true, source: 'mcp', target: 'ClaudeCodex', sourceHandle: 'source-right', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#10b981' } },
     { id: 'frontend-ClaudeCodex', animated: true, source: 'frontend', target: 'ClaudeCodex', sourceHandle: 'source-right', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#10b981' } },
-    { id: 'ClaudeCodex-code-agents', type: 'bezier', animated: true, source: 'ClaudeCodex', target: 'code-agents', sourceHandle: 'source-top', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#3b82f6' } },
-    { id: 'code-agents-ClaudeCodex', type: 'bezier', animated: true, source: 'code-agents', target: 'ClaudeCodex', sourceHandle: 'source-right', targetHandle: 'target-top', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#3b82f6' } },
+    { id: 'ClaudeCodex-code-agents', type: 'smoothstep', animated: true, source: 'ClaudeCodex', target: 'code-agents', sourceHandle: 'source-top', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#3b82f6' } },
+    { id: 'code-agents-ClaudeCodex', type: 'smoothstep', animated: true, source: 'code-agents', target: 'ClaudeCodex', sourceHandle: 'source-right', targetHandle: 'target-top', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#3b82f6' } },
     { id: 'ClaudeCodex-github', type: 'straight', animated: true, source: 'ClaudeCodex', target: 'github', sourceHandle: 'source-right', targetHandle: 'target-left', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }, style: { strokeWidth: 2, stroke: '#f59e0b' } },
 ];
 
@@ -123,7 +123,7 @@ export default function FlowDiagram() {
                 elementsSelectable={false}
                 colorMode="dark"
                 defaultEdgeOptions={{
-                    type: 'bezier',
+                    type: 'smoothstep',
                     animated: true,
                 }}
                 fitViewOptions={{
