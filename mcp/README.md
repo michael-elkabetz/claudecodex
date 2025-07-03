@@ -247,7 +247,7 @@ mcp/
 │   │   ├── health-controller.ts
 │   │   └── mcp-controller.ts
 │   ├── services/             # Business logic
-│   │   └── core-service.ts
+│   │   └── dev-service.ts
 │   ├── tools/                # MCP tools
 │   │   ├── code.ts
 │   │   └── tool-definition.ts
