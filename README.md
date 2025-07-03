@@ -2,6 +2,8 @@
 
 # ClaudeCodex
 
+![flow.gif](flow.gif)
+
 ClaudeCodex is the first open-source project that turns the most powerful code agents, such as ANTHROPIC ClaudeCode and OpenAI Codex into background agents, accessible via REST API, MCP, and an interactive frontend
 
 ## ✨ Features
@@ -109,7 +111,7 @@ docker run -e GITHUB_CLIENT_ID=[your_client_id] \
     GITHUB_TOKEN=ghp_xxx
     API_KEY=[your_anthropic_or_openai_api_key]  # Optional
     ```
-
+![flow.gif](../../../Downloads/flow.gif)
 3.  **Build and deploy:**
 
     ```bash
