@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
-import { ProcessService } from '../services/process.service';
+import { DevAgent } from '../agents/dev.agent';
 import { ExecuteRequest, ApiResponse } from '../types/api.types';
 import { AIService } from '../services/ai.service';
 
@@ -22,11 +22,11 @@ export const upload = multer({
 });
 
 export class DevController {
-  private processService: ProcessService;
+  private devAgent: DevAgent;
   private aiService: AIService;
 
   constructor() {
-    this.processService = new ProcessService();
+    this.devAgent = new DevAgent();
     this.aiService = new AIService();
   }
 
@@ -51,7 +51,7 @@ export class DevController {
         return;
       }
 
-      const result = await this.processService.processRequest(processRequest);
+      const result = await this.devAgent.processRequest(processRequest);
       
       if (result.success) {
         res.status(200).json(result);

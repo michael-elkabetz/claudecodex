@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import { GitHubService } from '../services/github.service';
-import { AIService } from '../services/ai.service';
+import { AIService, TaskType, AIProvider } from '../services/ai.service';
 import { GitHubAuthRequest, ApiResponse } from '../types/api.types';
 
 export class GitHubController {
@@ -101,18 +101,16 @@ export class GitHubController {
 
       let branchName: string;
       if (apiKey) {
-        const provider = this.aiService.detectProvider(apiKey);
+        const provider = this.aiService.detectAIProvider(apiKey);
         const branchPrompt = fs.readFileSync(__dirname + '/../prompts/branch-naming.md', 'utf8')
           .replace('{{PROMPT}}', prompt);
 
-        let aiResponse;
-        if (provider === 'anthropic') {
-          aiResponse = await this.aiService.generateBranchNameWithAntropic(apiKey, branchPrompt);
-        } else if (provider === 'openai') {
-          aiResponse = await this.aiService.generateBranchNameWithOpenAI(apiKey, branchPrompt);
-        } else {
-          throw new Error('Invalid API key format');
-        }
+        const aiResponse = await this.aiService.generate({
+          taskType: TaskType.Text,
+          aiProvider: provider,
+          apiKey: apiKey,
+          prompt: branchPrompt
+        });
         branchName = aiResponse.content.trim();
       } else {
         branchName = prompt.toLowerCase()
@@ -173,19 +171,17 @@ export class GitHubController {
       let prTitle = title || branchName;
 
       if (apiKey && prompt) {
-        const provider = this.aiService.detectProvider(apiKey);
+        const provider = this.aiService.detectAIProvider(apiKey);
         const prPrompt = fs.readFileSync(__dirname + '/../prompts/pr-description.md', 'utf8')
           .replace('{{PROMPT}}', prompt)
           .replace('{{BRANCH_NAME}}', branchName);
 
-        let aiResponse;
-        if (provider === 'anthropic') {
-          aiResponse = await this.aiService.generatePRDescriptionWithClaude(apiKey, prPrompt);
-        } else if (provider === 'openai') {
-          aiResponse = await this.aiService.generatePRDescriptionWithGPT(apiKey, prPrompt);
-        } else {
-          throw new Error('Invalid API key format');
-        }
+        const aiResponse = await this.aiService.generate({
+          taskType: TaskType.Text,
+          aiProvider: provider,
+          apiKey: apiKey,
+          prompt: prPrompt
+        });
 
         const prContent = aiResponse.content.trim();
         const lines = prContent.split('\n');
