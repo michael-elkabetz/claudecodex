@@ -80,7 +80,7 @@ export class GitHubController {
 
   createBranch = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { prompt, apiKey, githubUrl, githubToken, baseBranch = 'main' } = req.body;
+      const { prompt, apiKey, githubUrl, githubToken, baseBranch } = req.body;
 
       if (!prompt || !githubUrl || !githubToken) {
         res.status(400).json({
@@ -148,7 +148,7 @@ export class GitHubController {
 
   createPR = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { prompt, apiKey, githubUrl, githubToken, branchName, baseBranch = 'main', title } = req.body;
+      const { prompt, apiKey, githubUrl, githubToken, branchName, baseBranch, title } = req.body;
 
       if (!githubUrl || !githubToken || !branchName) {
         res.status(400).json({

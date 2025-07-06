@@ -1,6 +1,27 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 
-const options: swaggerJsdoc.Options = {
+const getServerUrl = (req?: any) => {
+  const nodeEnv = process.env.NODE_ENV || 'development';
+  const port = process.env.PORT || 3000;
+
+  if (req) {
+    const protocol = req.protocol || (req.headers['x-forwarded-proto'] || 'http');
+    const host = req.get('host') || req.headers.host;
+    if (host) {
+      return `${protocol}://${host}`;
+    }
+  }
+
+  if (nodeEnv === 'production') {
+    return process.env.SWAGGER_BASE_URL || 'https://app.claudecodex.com';
+  } else if (process.env.SWAGGER_BASE_URL) {
+    return process.env.SWAGGER_BASE_URL;
+  } else {
+    return `http://localhost:${port}`;
+  }
+};
+
+const getSwaggerOptions = (req?: any): swaggerJsdoc.Options => ({
   definition: {
     openapi: '3.0.0',
     info: {
@@ -15,6 +36,8 @@ const options: swaggerJsdoc.Options = {
     - **🏥 Health**: \`GET /api/health\` - Health check
     - **🔐 Auth**: \`POST /api/github/auth\` - GitHub OAuth
     - **🌿 Branches**: \`POST /api/github/branches\` - Get repository branches
+    - **🌿 Create Branch**: \`POST /api/github/create-branch\` - Create new branch
+    - **🔄 Create PR**: \`POST /api/github/create-pr\` - Create pull request
       `,
       contact: {
         name: 'API Support',
@@ -27,12 +50,16 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server'
+        url: getServerUrl(req),
+        description: `${process.env.NODE_ENV || 'development'} server (dynamic)`
       },
       {
-        url: 'https://api.bgcode.com',
+        url: 'https://app.claudecodex.com',
         description: 'Production server'
+      },
+      {
+        url: 'http://localhost:3000',
+        description: 'Local development server'
       }
     ],
     components: {
@@ -242,7 +269,15 @@ const options: swaggerJsdoc.Options = {
     ]
   },
   apis: ['./src/routes/*.ts', './src/index.ts'],
+});
+
+// Generate swagger specs dynamically
+const getSwaggerSpecs = (req?: any) => {
+  const options = getSwaggerOptions(req);
+  return swaggerJsdoc(options);
 };
 
-const specs = swaggerJsdoc(options);
-export default specs; 
+// Default export for backward compatibility
+const specs = swaggerJsdoc(getSwaggerOptions());
+export default specs;
+export { getSwaggerSpecs }; 

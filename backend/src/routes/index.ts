@@ -51,6 +51,15 @@ router.use('/github', githubRoutes);
  *                     githubBranches:
  *                       type: string
  *                       example: "/api/github/branches"
+ *                     githubCreateBranch:
+ *                       type: string
+ *                       example: "/api/github/create-branch"
+ *                     githubCreatePR:
+ *                       type: string
+ *                       example: "/api/github/create-pr"
+ *                     devModels:
+ *                       type: string
+ *                       example: "/api/dev/models"
  */
 router.get('/', (req, res) => {
   res.json({
@@ -59,9 +68,12 @@ router.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       execute: '/api/dev/execute',
+      models: '/api/dev/models',
       health: '/api/health',
       githubAuth: '/api/github/auth',
-      githubBranches: '/api/github/branches'
+      githubBranches: '/api/github/branches',
+      githubCreateBranch: '/api/github/create-branch',
+      githubCreatePR: '/api/github/create-pr'
     }
   });
 });

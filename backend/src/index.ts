@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpecs from './config/swagger.config';
+import { getSwaggerSpecs } from './config/swagger.config';
 import routes from './routes';
 import path from 'path';
 import compression from 'compression';
@@ -12,7 +12,7 @@ import morgan from 'morgan';
 import hpp from 'hpp';
 import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 
 dotenv.config();
 
@@ -182,25 +182,29 @@ const validateGitHubUrl = body('githubUrl')
 
 // Custom logging middleware removed - using Morgan instead
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
-  customCss: `
-    .swagger-ui .topbar { display: none }
-    .swagger-ui .info hgroup.main h2 { color: #3b82f6 }
-    .swagger-ui .info .title { color: #1f2937; font-size: 36px; }
-    .swagger-ui .scheme-container { background: #f8fafc; padding: 15px; border-radius: 8px; }
-  `,
-  customSiteTitle: '🤖 ClaudeCodex API',
-  customfavIcon: '/favicon.ico',
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true,
-    docExpansion: 'list',
-    filter: true,
-    showRequestHeaders: true,
-    tagsSorter: 'alpha',
-    operationsSorter: 'alpha'
-  }
-}));
+app.use('/api-docs', swaggerUi.serve);
+app.get('/api-docs', (req, res) => {
+  const dynamicSpecs = getSwaggerSpecs(req);
+  res.send(swaggerUi.generateHTML(dynamicSpecs, {
+    customCss: `
+      .swagger-ui .topbar { display: none }
+      .swagger-ui .info hgroup.main h2 { color: #3b82f6 }
+      .swagger-ui .info .title { color: #1f2937; font-size: 36px; }
+      .swagger-ui .scheme-container { background: #f8fafc; padding: 15px; border-radius: 8px; }
+    `,
+    customSiteTitle: '🤖 ClaudeCodex API',
+    customfavIcon: '/favicon.ico',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      docExpansion: 'list',
+      filter: true,
+      showRequestHeaders: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha'
+    }
+  }));
+});
 
 app.use('/api', apiLimiter, validateContentType, routes);
 
