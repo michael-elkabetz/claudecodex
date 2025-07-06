@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import {spawn} from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface AIResponse {
     content: string;
@@ -172,6 +174,11 @@ export class AIService {
     }
 
     async generateCodeWithClaudeCodeCLI(apiKey: string, prompt: string, workspacePath?: string, model?: string): Promise<AIResponse> {
+        const targetWorkspacePath = workspacePath || process.cwd();
+        const claudeFilePath = path.join(targetWorkspacePath, 'CLAUDE.md');
+        const sourceClaudeFilePath = path.join(__dirname, '..', 'prompts', 'CLAUDE.md');
+        let claudeFileCopied = false;
+
         try {
             if (!this.validateAnthropicKey(apiKey)) {
                 throw new Error('Invalid Anthropic API key format. Must start with sk-ant-');
@@ -180,13 +187,24 @@ export class AIService {
             const sanitizedPrompt = this.sanitizePrompt(prompt);
             const selectedModel = this.validateAndGetModel(model, 'anthropic');
 
+            if (fs.existsSync(sourceClaudeFilePath)) {
+                try {
+                    const claudeContent = fs.readFileSync(sourceClaudeFilePath, 'utf-8');
+                    fs.writeFileSync(claudeFilePath, claudeContent);
+                    claudeFileCopied = true;
+                    console.log('✅ Copied CLAUDE.md to working directory');
+                } catch (copyError) {
+                    console.warn('⚠️  Failed to copy CLAUDE.md to working directory:', copyError);
+                }
+            }
+
             const result = await this.executeCLICommand('claude', ['-p', '--dangerously-skip-permissions'], {
                 input: sanitizedPrompt,
                 env: {
                     ANTHROPIC_API_KEY: apiKey,
                     ANTHROPIC_MODEL: selectedModel,
                 },
-                cwd: workspacePath || process.cwd(),
+                cwd: targetWorkspacePath,
                 timeout: 1000000
             });
 
@@ -204,7 +222,6 @@ export class AIService {
             const estimatedOutputTokens = Math.ceil(result.stdout.length / 4);
             const totalTokens = estimatedInputTokens + estimatedOutputTokens;
 
-
             return {
                 content: result.stdout.trim(),
                 usage: {
@@ -216,6 +233,15 @@ export class AIService {
         } catch (error) {
             console.error('Error with Claude Code CLI:', error);
             throw new Error(`Claude Code CLI error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            if (claudeFileCopied && fs.existsSync(claudeFilePath)) {
+                try {
+                    fs.unlinkSync(claudeFilePath);
+                    console.log('✅ Cleaned up CLAUDE.md from working directory');
+                } catch (cleanupError) {
+                    console.warn('⚠️  Failed to clean up CLAUDE.md from working directory:', cleanupError);
+                }
+            }
         }
     }
 
