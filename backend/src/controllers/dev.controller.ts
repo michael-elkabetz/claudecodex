@@ -31,7 +31,7 @@ export class DevController {
   }
 
 
-  process = async (req: Request, res: Response): Promise<void> => {
+  execute = async (req: Request, res: Response): Promise<void> => {
     try {
       const processRequest: ExecuteRequest = {
         prompt: req.body.prompt,

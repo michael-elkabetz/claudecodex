@@ -72,49 +72,23 @@ export class GitHubService {
         }
     }
 
-    async getDefaultBranch(token: string, owner: string, repo: string): Promise<string> {
-        try {
-            this.initOctokit(token);
-            
-            const repoInfo = await this.octokit!.rest.repos.get({
-                owner,
-                repo,
-            });
-            
-            return repoInfo.data.default_branch;
-        } catch (error) {
-            console.error('Error fetching default branch:', error);
-            // Fallback to common default branches
-            const fallbackBranches = ['main', 'master'];
-            
-            for (const branch of fallbackBranches) {
-                try {
-                    await this.octokit!.rest.repos.getBranch({
-                        owner,
-                        repo,
-                        branch,
-                    });
-                    console.log(`✅ Found fallback branch: ${branch}`);
-                    return branch;
-                } catch (branchError) {
-                    continue;
-                }
-            }
-            
-            throw new Error('Could not determine default branch');
-        }
-    }
-
     async createBranch(token: string, owner: string, repo: string, branchName: string, fromBranch?: string): Promise<{branchName: string; branchUrl: string; sha: string}> {
         try {
             this.initOctokit(token);
 
-            const baseBranchName = fromBranch || await this.getDefaultBranch(token, owner, repo);
+            if (!fromBranch) {
+                const repoInfo = await this.octokit!.rest.repos.get({
+                    owner,
+                    repo
+                });
+                fromBranch = repoInfo.data.default_branch;
+                console.log(`🔍 Auto-detected default branch: ${fromBranch}`);
+            }
 
             const baseBranch = await this.octokit!.rest.repos.getBranch({
                 owner,
                 repo,
-                branch: baseBranchName,
+                branch: fromBranch,
             });
 
             const result = await this.octokit!.rest.git.createRef({
@@ -124,7 +98,7 @@ export class GitHubService {
                 sha: baseBranch.data.commit.sha,
             });
             
-            console.log(`✅ Branch '${branchName}' created successfully from '${baseBranchName}'!`);
+            console.log(`✅ Branch '${branchName}' created successfully!`);
             
             return {
                 branchName,
@@ -141,7 +115,14 @@ export class GitHubService {
         try {
             this.initOctokit(token);
 
-            const baseBranchName = base || await this.getDefaultBranch(token, owner, repo);
+            if (!base) {
+                const repoInfo = await this.octokit!.rest.repos.get({
+                    owner,
+                    repo
+                });
+                base = repoInfo.data.default_branch;
+                console.log(`🔍 Auto-detected default branch for PR: ${base}`);
+            }
 
             const existingPRs = await this.octokit!.rest.pulls.list({
                 owner,
@@ -164,10 +145,8 @@ export class GitHubService {
                 title,
                 body,
                 head,
-                base: baseBranchName,
+                base,
             });
-
-            console.log(`✅ PR created successfully targeting '${baseBranchName}'!`);
 
             return {
                 pullRequestUrl: response.data.html_url,

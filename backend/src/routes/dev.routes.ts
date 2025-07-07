@@ -34,38 +34,7 @@ const devController = new DevController();
  *       content:
  *         multipart/form-data:
  *           schema:
- *             type: object
- *             properties:
- *               prompt:
- *                 type: string
- *                 description: Description of what to build
- *               apiKey:
- *                 type: string
- *                 description: AI API key (Anthropic or OpenAI)
- *               githubUrl:
- *                 type: string
- *                 description: GitHub repository URL
- *               githubToken:
- *                 type: string
- *                 description: GitHub access token (optional - can be provided via GITHUB_TOKEN environment variable)
- *               files:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
- *                 description: Optional files to include in the request
- *               model:
- *                 type: string
- *                 description: AI model to use (optional - uses defaults if not specified)
- *             required:
- *               - prompt
- *               - githubUrl
- *
- *           example:
- *             prompt: "Add a new feature to calculate user statistics"
- *             apiKey: "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxx"
- *             githubUrl: "https://github.com/username/repository"
- *             githubToken: "ghp_xxxxxxxxxxxxxxxxxxxx"
+ *             $ref: '#/components/schemas/ExecuteRequest'
  *     responses:
  *       200:
  *         description: 🎉 Pull request created successfully!
@@ -99,7 +68,7 @@ const devController = new DevController();
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post('/execute', upload.array('files', 10), devController.process);
+router.post('/execute', upload.array('files', 10), devController.execute);
 
 /**
  * @swagger

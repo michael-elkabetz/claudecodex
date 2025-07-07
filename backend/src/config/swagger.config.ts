@@ -116,6 +116,11 @@ const getSwaggerOptions = (req?: any): swaggerJsdoc.Options => ({
               description: 'Description of changes to make',
               example: 'Add a new feature to calculate user statistics'
             },
+            githubUrl: {
+              type: 'string',
+              description: 'GitHub repository URL',
+              example: 'https://github.com/username/repository'
+            },
             apiKey: {
               type: 'string',
               description: 'Anthropic (sk-ant-) or OpenAI (sk-) API key. System automatically detects provider based on key prefix.',
@@ -133,15 +138,15 @@ const getSwaggerOptions = (req?: any): swaggerJsdoc.Options => ({
                 'o4-mini',
               ]
             },
-            githubUrl: {
-              type: 'string',
-              description: 'GitHub repository URL',
-              example: 'https://github.com/username/repository'
-            },
             githubToken: {
               type: 'string',
               description: 'GitHub access token (optional - can be provided via GITHUB_TOKEN environment variable)',
               example: 'ghp_xxxxxxxxxxxxxxxxxxxx'
+            },
+            branch: {
+              type: 'string',
+              description: 'Base branch to create the new branch from (optional - automatically detects repository default branch if not provided)',
+              example: 'main'
             },
             files: {
               type: 'array',

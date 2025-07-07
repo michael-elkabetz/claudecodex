@@ -144,7 +144,7 @@ router.post('/branches', githubController.getBranches);
  *                 description: GitHub access token
  *               baseBranch:
  *                 type: string
- *                 description: Base branch to create from (optional, defaults to repository default)
+ *                 description: Base branch to create from (optional, automatically detects repository default branch if not provided)
  *             required:
  *               - prompt
  *               - githubUrl
@@ -217,7 +217,7 @@ router.post('/create-branch', githubController.createBranch);
  *                 description: Source branch name for the PR
  *               baseBranch:
  *                 type: string
- *                 description: Target branch for the PR (optional, defaults to repository default)
+ *                 description: Target branch for the PR (optional, automatically detects repository default branch if not provided)
  *               title:
  *                 type: string
  *                 description: PR title (optional, will be generated if not provided)
